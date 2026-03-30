@@ -65,6 +65,14 @@ kotlin {
             implementation(libs.sqldelight.jvmDriver)
         }
     }
+
+    sqldelight {
+        databases {
+            create("LectorDatabase") {
+                packageName.set("com.nedmah.textlector.db")
+            }
+        }
+    }
 }
 
 android {
@@ -106,13 +114,6 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.nedmah.textlector"
             packageVersion = "1.0.0"
-        }
-    }
-}
-sqldelight {
-    databases {
-        create("LectorDatabase") {
-            packageName.set("com.nedmah.textlector.db")
         }
     }
 }

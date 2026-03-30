@@ -1,0 +1,22 @@
+CREATE TABLE paragraph (
+    id TEXT NOT NULL PRIMARY KEY,
+    document_id TEXT NOT NULL,
+    index_in_doc INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES document(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_paragraph_document_id ON paragraph(document_id);
+
+selectByDocumentId:
+SELECT * FROM paragraph
+WHERE document_id = :documentId
+ORDER BY index_in_doc ASC;
+
+insertParagraph:
+INSERT INTO paragraph(id, document_id, index_in_doc, text)
+VALUES (?, ?, ?, ?);
+
+deleteByDocumentId:
+DELETE FROM paragraph
+WHERE document_id = :documentId;

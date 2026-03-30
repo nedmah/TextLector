@@ -8,6 +8,7 @@ data class Document(
     val isFavorite: Boolean,
     val wordCount: Int,
     val estimatedReadingMinutes: Int,
+    val lastOpenedAt: Long,
     val totalParagraphs: Int,
     val lastParagraphIndex: Int // for progress
 )
@@ -27,6 +28,8 @@ sealed class SourceType{
     data object Docx : SourceType() // v2
     data object Camera : SourceType() // v2
 }
+
+enum class DocumentSortOrder { LAST_OPENED, CREATED_AT}
 
 data class UserPreferences(
     val speechSpeed: Float,  // 0,5f - 2f
