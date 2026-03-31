@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -21,6 +22,11 @@ kotlin {
         }
     }
 
+    compilerOptions{
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
+
     androidTarget{}
     
     jvm()
@@ -41,6 +47,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            // Date
+            implementation(libs.kotlinx.datetime)
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -50,8 +58,15 @@ kotlin {
             // SQLDelight
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
+            // Settings
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.coroutines)
             // Okio
             implementation(libs.okio)
+            // uuid
+            implementation(libs.uuid)
+            // pdf
+            implementation(libs.pdfbox.android)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)
@@ -63,6 +78,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.jvmDriver)
+            implementation(libs.pdfbox.jvm)
         }
     }
 
