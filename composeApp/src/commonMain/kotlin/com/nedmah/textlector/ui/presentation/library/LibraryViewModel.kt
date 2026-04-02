@@ -1,0 +1,111 @@
+package com.nedmah.textlector.ui.presentation.library
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.domain.model.DocumentSortOrder
+import com.nedmah.textlector.domain.usecase.DeleteDocumentUseCase
+import com.nedmah.textlector.domain.usecase.GetDocumentsUseCase
+import com.nedmah.textlector.domain.usecase.GetFavoritesUseCase
+import com.nedmah.textlector.domain.usecase.GetRecentDocumentsUseCase
+import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
+import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class LibraryViewModel(
+    private val getDocumentsUseCase: GetDocumentsUseCase,
+    private val deleteDocumentUseCase: DeleteDocumentUseCase,
+    private val getFavoritesUseCase: GetFavoritesUseCase,
+    private val getRecentDocumentsUseCase: GetRecentDocumentsUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val updateLastOpenedUseCase: UpdateLastOpenedUseCase
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryState())
+    val state = _state.asStateFlow()
+
+    private val _effect = Channel<com.nedmah.textlector.ui.presentation.library.LibraryEffect>(Channel.BUFFERED)
+    val effect = _effect.receiveAsFlow()
+
+    private var searchJob : Job? = null
+
+    fun onEvent(intent: com.nedmah.textlector.ui.presentation.library.LibraryIntent){
+        when(intent){
+            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.DeleteDocument -> deleteDocument(intent.id)
+            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.ToggleFavorite -> toggleFavorite(intent.id, intent.isFavorite)
+            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.SearchDocuments -> searchForDocs(intent.query)
+            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.SelectDocument -> selectDocument(intent.id)
+            _root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryIntent.OpenImport -> sendEffect(
+                _root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.NavigateToImport)
+        }
+    }
+
+    private fun searchForDocs(query : String) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(300L) // debounce
+            if (query.isBlank()) {
+                loadDocuments()
+                return@launch
+            }
+            val filtered = _state.value.recentDocs
+                .filter { it.title.contains(query, ignoreCase = true) }
+            _state.update { it.copy(recentDocs = filtered) }
+        }
+    }
+
+    private fun loadDocuments() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            launch {
+                getFavoritesUseCase().collect { favorites ->
+                    _state.update { it.copy(favoriteDocs = favorites) }
+                }
+            }
+
+            launch {
+                getRecentDocumentsUseCase(DocumentSortOrder.LAST_OPENED)
+                    .collect { recent ->
+                        _state.update { it.copy(
+                            recentDocs = recent,
+                            isLoading = false
+                        )}
+                    }
+            }
+        }
+    }
+
+    private fun selectDocument(id: String) {
+        viewModelScope.launch {
+            updateLastOpenedUseCase(id)
+            sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.NavigateToReader(id))
+        }
+    }
+
+    private fun toggleFavorite(id : String, isFavorite : Boolean)= viewModelScope.launch {
+        toggleFavoriteUseCase.invoke(id, isFavorite)
+            .onFailure { sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.ShowError(it.message ?: "Error")) }
+    }
+
+    private fun deleteDocument(id : String)= viewModelScope.launch {
+        deleteDocumentUseCase.invoke(id)
+            .onSuccess {
+                sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.DocumentDeleted)
+            }
+            .onFailure {
+                sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.ShowError(it.message ?: "Delete failed"))
+            }
+    }
+
+    private fun sendEffect(effect: com.nedmah.textlector.ui.presentation.library.LibraryEffect) {
+        viewModelScope.launch { _effect.send(effect) }
+    }
+
+}

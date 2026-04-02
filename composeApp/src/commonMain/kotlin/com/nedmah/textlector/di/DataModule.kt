@@ -1,5 +1,6 @@
 package com.nedmah.textlector.di
 
+import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.DocumentRepositoryImpl
 import com.nedmah.textlector.data.repository.ParagraphRepositoryImpl
@@ -21,6 +22,12 @@ import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import com.nedmah.textlector.domain.usecase.UpdatePreferencesUseCase
+import com.nedmah.textlector.ui.presentation.import_from.ImportViewModel
+import com.nedmah.textlector.ui.presentation.library.LibraryViewModel
+import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
+import com.nedmah.textlector.ui.presentation.reader.ReaderViewModel
+import com.nedmah.textlector.ui.presentation.settings.SettingsViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val dataModule = module {
@@ -50,4 +57,29 @@ val dataModule = module {
     factory { UpdatePreferencesUseCase(get()) }
     factory { InputTextManuallyUseCase(get(), get()) }
     factory { ImportDocumentUseCase(get(), get(), get()) }
+
+    // ViewModels
+    single {
+        com.nedmah.textlector.ui.presentation.player.PlayerViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get<TtsEngine>()
+        )
+    }
+    viewModel {
+        com.nedmah.textlector.ui.presentation.library.LibraryViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
+    factory { com.nedmah.textlector.ui.presentation.reader.ReaderViewModel(get(), get(), get()) }
+    factory { com.nedmah.textlector.ui.presentation.import_from.ImportViewModel(get(), get()) }
+    factory { com.nedmah.textlector.ui.presentation.settings.SettingsViewModel(get(), get()) }
 }

@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -67,6 +68,7 @@ kotlin {
             implementation(libs.uuid)
             // pdf
             implementation(libs.pdfbox.android)
+            implementation(libs.kotlinx.serialization.json)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)

@@ -1,7 +1,7 @@
 package com.nedmah.textlector.domain.usecase
 
 import com.benasher44.uuid.uuid4
-import com.nedmah.textlector.common.platform.FileReader
+import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.SourceType
@@ -20,7 +20,7 @@ class ImportDocumentUseCase(
 ) {
 
     @OptIn(ExperimentalTime::class)
-    suspend operator fun invoke(uri: String, title: String, type: SourceType): Result<Unit> =
+    suspend operator fun invoke(uri: String, title: String, type: SourceType): Result<Document> =
         withContext(Dispatchers.Default) {
             runCatching {
                 val text = when (type) {
@@ -56,6 +56,7 @@ class ImportDocumentUseCase(
 
                 documentRepository.saveDocument(document).getOrThrow()
                 paragraphRepository.saveParagraphs(paragraphs).getOrThrow()
+                document
             }
         }
 }

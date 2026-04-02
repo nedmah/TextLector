@@ -1,4 +1,4 @@
-package com.nedmah.textlector.common.platform
+package com.nedmah.textlector.common.platform.file
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +9,6 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.stringWithContentsOfURL
 import platform.PDFKit.PDFDocument
-import kotlin.runCatching
 
 actual class FileReader {
 
@@ -17,8 +16,8 @@ actual class FileReader {
     actual suspend fun readText(uri: String): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val nsUrl = NSURL.fileURLWithPath(uri)
-                NSString.stringWithContentsOfURL(
+                val nsUrl = NSURL.Companion.fileURLWithPath(uri)
+                NSString.Companion.stringWithContentsOfURL(
                     url = nsUrl,
                     encoding = NSUTF8StringEncoding,
                     error = null
@@ -29,7 +28,7 @@ actual class FileReader {
     actual suspend fun readPdf(uri: String): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val nsUrl = NSURL.fileURLWithPath(uri)
+                val nsUrl = NSURL.Companion.fileURLWithPath(uri)
                 val pdfDoc = PDFDocument(uRL = nsUrl)
 
                 (0 until pdfDoc.pageCount.toInt()).mapNotNull { index ->

@@ -1,12 +1,12 @@
-package com.nedmah.textlector.common.platform
+package com.nedmah.textlector.common.platform.file
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.core.net.toUri
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 actual class FileReader(private val context: Context) {
 
@@ -22,7 +22,7 @@ actual class FileReader(private val context: Context) {
         }
 
     actual suspend fun readPdf(uri: String): Result<String> =
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             runCatching {
                 PDFBoxResourceLoader.init(context)
                 val inputStream = context.contentResolver

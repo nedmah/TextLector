@@ -1,4 +1,4 @@
-package com.nedmah.textlector.common.platform
+package com.nedmah.textlector.common.platform.file
 
 expect class FileReader {
     suspend fun readText(uri: String): Result<String>

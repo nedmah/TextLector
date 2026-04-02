@@ -1,7 +1,8 @@
-package com.nedmah.textlector.common.platform
+package com.nedmah.textlector.common.platform.file
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.buffer
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -12,7 +13,7 @@ actual class FileReader {
     actual suspend fun readText(uri: String): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
-                okio.FileSystem.SYSTEM
+                FileSystem.SYSTEM
                     .source(uri.toPath())
                     .buffer()
                     .use { it.readUtf8() }

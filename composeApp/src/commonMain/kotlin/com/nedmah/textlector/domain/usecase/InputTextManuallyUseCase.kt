@@ -19,7 +19,7 @@ class InputTextManuallyUseCase(
 ) {
 
     @OptIn(ExperimentalTime::class)
-    suspend operator fun invoke(title: String, text: String): Result<Unit> =
+    suspend operator fun invoke(title: String, text: String): Result<Document> =
         withContext(Dispatchers.IO){
             runCatching {
                 val segments = TextSegmenter.segment(text)
@@ -50,6 +50,7 @@ class InputTextManuallyUseCase(
 
                 documentRepository.saveDocument(document).getOrThrow()
                 paragraphRepository.saveParagraphs(paragraphsWithId).getOrThrow()
+                document
             }
         }
 }

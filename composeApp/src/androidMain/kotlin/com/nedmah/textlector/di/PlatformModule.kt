@@ -1,7 +1,8 @@
 package com.nedmah.textlector.di
 
 import android.content.Context
-import com.nedmah.textlector.common.platform.FileReader
+import com.nedmah.textlector.common.platform.file.FileReader
+import com.nedmah.textlector.common.platform.tts.TtsEngineFactory
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SharedPreferencesSettings
@@ -17,4 +18,5 @@ actual val platformModule = module {
     }
 
     single { FileReader(androidContext()) }
+    single { TtsEngineFactory(androidContext()).create() }
 }
