@@ -27,9 +27,14 @@ selectFavorites:
 SELECT * FROM document
 WHERE is_favorite = 1;
 
-selectRecent:
+selectRecentByLastOpened:
 SELECT * FROM document
 ORDER BY last_opened_at DESC
+LIMIT :limit;
+
+selectRecentByCreatedAt:
+SELECT * FROM document
+ORDER BY created_at DESC
 LIMIT :limit;
 
 insert:

@@ -1,6 +1,7 @@
 package com.nedmah.textlector.di
 
 import android.content.Context
+import androidx.activity.ComponentActivity
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.tts.TtsEngineFactory
 import com.nedmah.textlector.data.db.DatabaseDriverFactory

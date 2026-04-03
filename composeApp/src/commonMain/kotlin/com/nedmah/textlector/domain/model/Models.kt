@@ -1,5 +1,10 @@
 package com.nedmah.textlector.domain.model
 
+data class ProcessedDocument(
+    val document: Document,
+    val paragraphs: List<Paragraph>
+)
+
 data class Document(
     val id: String,           // UUID
     val title: String,

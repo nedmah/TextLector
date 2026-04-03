@@ -37,11 +37,16 @@ class DocumentRepositoryImpl(
     override fun getRecentDocs(
         sortBy: DocumentSortOrder,
         limit: Int
-    ): Flow<List<Document>> =
-        queries.selectRecent(limit.toLong())
+    ): Flow<List<Document>> {
+        val query = when (sortBy) {
+            DocumentSortOrder.LAST_OPENED -> queries.selectRecentByLastOpened(limit.toLong())
+            DocumentSortOrder.CREATED_AT -> queries.selectRecentByCreatedAt(limit.toLong())
+        }
+        return query
             .asFlow()
             .mapToList(Dispatchers.IO)
-            .map{ list -> list.map { it.toDomain() }}
+            .map { list -> list.map { it.toDomain() } }
+    }
 
     override fun getDocumentById(id: String): Flow<Document?> =
         queries.selectById(id)

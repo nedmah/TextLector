@@ -3,6 +3,7 @@ package com.nedmah.textlector.domain.usecase
 import com.benasher44.uuid.uuid4
 import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.Paragraph
+import com.nedmah.textlector.domain.model.ProcessedDocument
 import com.nedmah.textlector.domain.model.SourceType
 import com.nedmah.textlector.domain.repository.DocumentRepository
 import com.nedmah.textlector.domain.repository.ParagraphRepository
@@ -14,12 +15,10 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class InputTextManuallyUseCase(
-    private val documentRepository: DocumentRepository,
-    private val paragraphRepository: ParagraphRepository
 ) {
 
     @OptIn(ExperimentalTime::class)
-    suspend operator fun invoke(title: String, text: String): Result<Document> =
+    suspend operator fun invoke(title: String, text: String): Result<ProcessedDocument> =
         withContext(Dispatchers.IO){
             runCatching {
                 val segments = TextSegmenter.segment(text)
@@ -45,12 +44,7 @@ class InputTextManuallyUseCase(
                     totalParagraphs = paragraphs.size,
                     lastParagraphIndex = 0
                 )
-
-                val paragraphsWithId = paragraphs.map { it.copy(documentId = document.id) }
-
-                documentRepository.saveDocument(document).getOrThrow()
-                paragraphRepository.saveParagraphs(paragraphsWithId).getOrThrow()
-                document
+                ProcessedDocument(document, paragraphs)
             }
         }
 }

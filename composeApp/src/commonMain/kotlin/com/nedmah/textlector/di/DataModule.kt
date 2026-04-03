@@ -18,6 +18,7 @@ import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.GetRecentDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
+import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
 import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
@@ -55,12 +56,13 @@ val dataModule = module {
     factory { UpdateLastOpenedUseCase(get()) }
     factory { GetPreferencesUseCase(get()) }
     factory { UpdatePreferencesUseCase(get()) }
-    factory { InputTextManuallyUseCase(get(), get()) }
-    factory { ImportDocumentUseCase(get(), get(), get()) }
+    factory { InputTextManuallyUseCase() }
+    factory { ImportDocumentUseCase(get())}
+    factory { SaveDocumentUseCase(get(), get() ) }
 
     // ViewModels
     single {
-        com.nedmah.textlector.ui.presentation.player.PlayerViewModel(
+        PlayerViewModel(
             get(),
             get(),
             get(),
@@ -70,7 +72,7 @@ val dataModule = module {
         )
     }
     viewModel {
-        com.nedmah.textlector.ui.presentation.library.LibraryViewModel(
+        LibraryViewModel(
             get(),
             get(),
             get(),
@@ -79,7 +81,7 @@ val dataModule = module {
             get()
         )
     }
-    factory { com.nedmah.textlector.ui.presentation.reader.ReaderViewModel(get(), get(), get()) }
-    factory { com.nedmah.textlector.ui.presentation.import_from.ImportViewModel(get(), get()) }
-    factory { com.nedmah.textlector.ui.presentation.settings.SettingsViewModel(get(), get()) }
+    factory { ReaderViewModel(get(), get(), get()) }
+    factory { ImportViewModel(get(), get(), get()) }
+    factory { SettingsViewModel(get(), get()) }
 }

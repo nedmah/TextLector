@@ -4,6 +4,7 @@ import com.benasher44.uuid.uuid4
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.Paragraph
+import com.nedmah.textlector.domain.model.ProcessedDocument
 import com.nedmah.textlector.domain.model.SourceType
 import com.nedmah.textlector.domain.repository.DocumentRepository
 import com.nedmah.textlector.domain.repository.ParagraphRepository
@@ -15,12 +16,10 @@ import kotlin.time.ExperimentalTime
 
 class ImportDocumentUseCase(
     private val fileReader: FileReader,
-    private val documentRepository: DocumentRepository,
-    private val paragraphRepository: ParagraphRepository
 ) {
 
     @OptIn(ExperimentalTime::class)
-    suspend operator fun invoke(uri: String, title: String, type: SourceType): Result<Document> =
+    suspend operator fun invoke(uri: String, title: String, type: SourceType): Result<ProcessedDocument> =
         withContext(Dispatchers.Default) {
             runCatching {
                 val text = when (type) {
@@ -53,10 +52,7 @@ class ImportDocumentUseCase(
                         text = paragraphText
                     )
                 }
-
-                documentRepository.saveDocument(document).getOrThrow()
-                paragraphRepository.saveParagraphs(paragraphs).getOrThrow()
-                document
+                ProcessedDocument(document, paragraphs)
             }
         }
 }

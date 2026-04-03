@@ -2,6 +2,7 @@ package com.nedmah.textlector.ui.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase

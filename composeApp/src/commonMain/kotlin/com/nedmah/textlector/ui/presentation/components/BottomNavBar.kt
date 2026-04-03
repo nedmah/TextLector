@@ -11,6 +11,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nedmah.textlector.common.navigation.ImportRoute
 import com.nedmah.textlector.common.navigation.LibraryRoute
 import com.nedmah.textlector.common.navigation.SettingsRoute
+import org.jetbrains.compose.resources.painterResource
+import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.ic_import
+import textlector.composeapp.generated.resources.ic_library
+import textlector.composeapp.generated.resources.ic_settings
 
 data class BottomNavItem(
     val label: String,
@@ -25,23 +30,23 @@ fun BottomNavBar(navController: NavController) {
     val currentRoute = backStack?.destination?.route
 
     val items = listOf(
-        _root_ide_package_.com.nedmah.textlector.ui.presentation.components.BottomNavItem(
+        BottomNavItem(
             "Library",
             LibraryRoute
         ) {
-//             Icon(Icons.Default.MenuBook, contentDescription = "Library")
+             Icon(painterResource(Res.drawable.ic_library), contentDescription = "Library")
         },
-        _root_ide_package_.com.nedmah.textlector.ui.presentation.components.BottomNavItem(
+        BottomNavItem(
             "Import",
             ImportRoute
         ) {
-//             Icon(Icons.Default.Add, contentDescription = "Import")
+             Icon(painterResource(Res.drawable.ic_import), contentDescription = "Import")
         },
-        _root_ide_package_.com.nedmah.textlector.ui.presentation.components.BottomNavItem(
+        BottomNavItem(
             "Settings",
             SettingsRoute
         ) {
-//             Icon(Icons.Default.Settings, contentDescription = "Settings")
+             Icon(painterResource(Res.drawable.ic_settings), contentDescription = "Settings")
         }
     )
 

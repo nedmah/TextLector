@@ -12,4 +12,6 @@ sealed interface LibraryIntent {
     data class SelectDocument(val id: String) :
         com.nedmah.textlector.ui.presentation.library.LibraryIntent
     data object OpenImport : com.nedmah.textlector.ui.presentation.library.LibraryIntent
+
+    data class ChangeSortType(val sortOrder: DocumentSortOrder) : LibraryIntent
 }

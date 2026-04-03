@@ -34,15 +34,23 @@ class LibraryViewModel(
     val effect = _effect.receiveAsFlow()
 
     private var searchJob : Job? = null
+    private var recentDocsJob: Job? = null
+    private var favoritesJob: Job? = null
+
+    init {
+        loadDocuments()
+    }
 
     fun onEvent(intent: com.nedmah.textlector.ui.presentation.library.LibraryIntent){
         when(intent){
-            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.DeleteDocument -> deleteDocument(intent.id)
-            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.ToggleFavorite -> toggleFavorite(intent.id, intent.isFavorite)
-            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.SearchDocuments -> searchForDocs(intent.query)
-            is com.nedmah.textlector.ui.presentation.library.LibraryIntent.SelectDocument -> selectDocument(intent.id)
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryIntent.OpenImport -> sendEffect(
-                _root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.NavigateToImport)
+            is LibraryIntent.DeleteDocument -> deleteDocument(intent.id)
+            is LibraryIntent.ToggleFavorite -> toggleFavorite(intent.id, intent.isFavorite)
+            is LibraryIntent.SearchDocuments -> searchForDocs(intent.query)
+            is LibraryIntent.SelectDocument -> selectDocument(intent.id)
+            LibraryIntent.OpenImport -> sendEffect(
+                LibraryEffect.NavigateToImport)
+
+            is LibraryIntent.ChangeSortType -> changeSortOrder(intent.sortOrder)
         }
     }
 
@@ -51,7 +59,7 @@ class LibraryViewModel(
         searchJob = viewModelScope.launch {
             delay(300L) // debounce
             if (query.isBlank()) {
-                loadDocuments()
+                changeSortOrder(_state.value.sortOrder)
                 return@launch
             }
             val filtered = _state.value.recentDocs
@@ -64,13 +72,15 @@ class LibraryViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            launch {
+            favoritesJob?.cancel()
+            favoritesJob = launch {
                 getFavoritesUseCase().collect { favorites ->
                     _state.update { it.copy(favoriteDocs = favorites) }
                 }
             }
 
-            launch {
+            recentDocsJob?.cancel()
+            recentDocsJob = launch {
                 getRecentDocumentsUseCase(DocumentSortOrder.LAST_OPENED)
                     .collect { recent ->
                         _state.update { it.copy(
@@ -94,13 +104,23 @@ class LibraryViewModel(
             .onFailure { sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.ShowError(it.message ?: "Error")) }
     }
 
+    private fun changeSortOrder(sortOrder: DocumentSortOrder) {
+        _state.update { it.copy(sortOrder = sortOrder) }
+        recentDocsJob?.cancel()
+        recentDocsJob = viewModelScope.launch {
+            getRecentDocumentsUseCase(sortOrder).collect { recent ->
+                _state.update { it.copy(recentDocs = recent) }
+            }
+        }
+    }
+
     private fun deleteDocument(id : String)= viewModelScope.launch {
         deleteDocumentUseCase.invoke(id)
             .onSuccess {
-                sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.DocumentDeleted)
+                sendEffect(LibraryEffect.DocumentDeleted)
             }
             .onFailure {
-                sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.ShowError(it.message ?: "Delete failed"))
+                sendEffect(LibraryEffect.ShowError(it.message ?: "Delete failed"))
             }
     }
 

@@ -1,9 +1,14 @@
 package com.nedmah.textlector.common.platform.file
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.memScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSError
+import platform.Foundation.NSFileCoordinator
+import platform.Foundation.NSFileCoordinatorReadingOptions
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
@@ -16,24 +21,52 @@ actual class FileReader {
     actual suspend fun readText(uri: String): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val nsUrl = NSURL.Companion.fileURLWithPath(uri)
-                NSString.Companion.stringWithContentsOfURL(
+                val nsUrl = NSURL.fileURLWithPath(uri)
+                var result = ""
+
+                NSFileCoordinator().coordinateReadingItemAtURL(
                     url = nsUrl,
-                    encoding = NSUTF8StringEncoding,
+                    options = 0u,
                     error = null
-                ) ?: error("Cannot read file at: $uri")
+                ) { url ->
+                    url?.let {
+                        result = NSString.stringWithContentsOfURL(
+                            url = it,
+                            encoding = NSUTF8StringEncoding,
+                            error = null
+                        ) ?: ""
+                    }
+                }
+
+                if (result.isBlank()) error("Cannot read file: $uri")
+                result
             }
         }
 
+    @OptIn(ExperimentalForeignApi::class)
     actual suspend fun readPdf(uri: String): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val nsUrl = NSURL.Companion.fileURLWithPath(uri)
-                val pdfDoc = PDFDocument(uRL = nsUrl)
+                val nsUrl = NSURL.fileURLWithPath(uri)
+                var result = ""
 
-                (0 until pdfDoc.pageCount.toInt()).mapNotNull { index ->
-                    pdfDoc.pageAtIndex(index.toULong())?.string
-                }.joinToString("\n\n")
+
+                NSFileCoordinator().coordinateReadingItemAtURL(
+                    url = nsUrl,
+                    options = 0u,
+                    error = null
+                ) { url ->
+                    url?.let {
+                        val pdfDoc = PDFDocument(uRL = it) ?: return@let
+                        result = (0 until pdfDoc.pageCount.toInt())
+                            .mapNotNull { i -> pdfDoc.pageAtIndex(i.toULong())?.string }
+                            .joinToString("\n\n")
+                    }
+                }
+
+
+                if (result.isBlank()) error("Cannot read PDF: $uri")
+                result
             }
         }
 }
