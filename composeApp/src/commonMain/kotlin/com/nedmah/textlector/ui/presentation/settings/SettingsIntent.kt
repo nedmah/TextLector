@@ -13,4 +13,9 @@ interface SettingsIntent {
         com.nedmah.textlector.ui.presentation.settings.SettingsIntent
     data class SetLanguage(val language: String) :
         com.nedmah.textlector.ui.presentation.settings.SettingsIntent
+
+    data class SetAudioEngine(val isEngine : Boolean) : SettingsIntent
+
+    data object DownloadCurrentVoice : SettingsIntent
+    data object DeleteCurrentVoice : SettingsIntent
 }

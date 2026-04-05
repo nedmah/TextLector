@@ -3,6 +3,10 @@ package com.nedmah.textlector.ui.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nedmah.textlector.common.platform.tts.TtsEngine
+import com.nedmah.textlector.domain.model.UserPreferences
+import com.nedmah.textlector.domain.model.VoiceGender
+import com.nedmah.textlector.domain.model.VoiceId
+import com.nedmah.textlector.domain.model.VoiceRegistry
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
@@ -94,7 +98,7 @@ class PlayerViewModel(
 
     private fun play() {
         if (!_state.value.isLoaded) return
-        if (!_state.value.isLoaded) return
+        if (_state.value.isLoading) return
         val paragraph = _state.value.currentParagraph ?: return
 
         val utteranceId = ++currentUtteranceId
@@ -107,12 +111,10 @@ class PlayerViewModel(
             ttsEngine.speak(
                 text = paragraph.text,
                 speed = _state.value.playbackSpeed,
-                onDone = {
-                    if (utteranceId == currentUtteranceId) {
-                        viewModelScope.launch { navigateParagraph(+1) }
-                    }
-                }
             )
+            if (utteranceId == currentUtteranceId){
+                navigateParagraph(+1)
+            }
         }
     }
 

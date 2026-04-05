@@ -1,7 +1,10 @@
 package com.nedmah.textlector.common.platform.tts
 
+import com.nedmah.textlector.domain.model.VoiceModel
+
 interface TtsEngine {
-    fun speak(text : String, speed: Float, onDone : () -> Unit)
+    suspend fun speak(text : String, speed: Float)
+    suspend fun loadVoice(model: VoiceModel)
     fun stop()
     fun shutdown()
 }

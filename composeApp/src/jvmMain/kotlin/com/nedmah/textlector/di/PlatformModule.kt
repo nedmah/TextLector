@@ -1,7 +1,6 @@
 package com.nedmah.textlector.di
 
 import com.nedmah.textlector.common.platform.file.FileReader
-import com.nedmah.textlector.common.platform.tts.TtsEngineFactory
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.PreferencesSettings
@@ -12,5 +11,4 @@ actual val platformModule = module {
     single { DatabaseDriverFactory() }
     single<ObservableSettings> { PreferencesSettings(Preferences.userRoot()) }
     single { FileReader() }
-    single { TtsEngineFactory().create() }
 }

@@ -44,6 +44,7 @@ import com.nedmah.textlector.domain.model.VoiceGender
 import com.nedmah.textlector.ui.presentation.settings.components.EngineRow
 import com.nedmah.textlector.ui.presentation.settings.components.FontSizeOption
 import com.nedmah.textlector.ui.presentation.settings.components.SettingsSection
+import com.nedmah.textlector.ui.presentation.settings.components.VoiceDownloadBanner
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
@@ -97,9 +98,12 @@ fun SettingsScreenRoot(
                 EngineRow(
                     title = "System TTS",
                     subtitle = "Uses your device's built-in voice",
-                    isSelected = true,
+                    isSelected = !state.useSherpaEngine,
                     isAvailable = true,
-                    onClick = { showEngineSheet = false }
+                    onClick = {
+                        viewModel.onIntent(SettingsIntent.SetAudioEngine(false))
+                        showEngineSheet = false
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -108,9 +112,12 @@ fun SettingsScreenRoot(
                 EngineRow(
                     title = "Piper",
                     subtitle = "High quality offline neural TTS",
-                    isSelected = false,
-                    isAvailable = false,
-                    onClick = { }
+                    isSelected = state.useSherpaEngine,
+                    isAvailable = true,
+                    onClick = {
+                        viewModel.onIntent(SettingsIntent.SetAudioEngine(true))
+                        showEngineSheet = false
+                    }
                 )
             }
         }
@@ -202,6 +209,15 @@ private fun SettingsScreen(
                     }
                 }
             }
+        }
+
+        if (state.useSherpaEngine) {
+            Spacer(modifier = Modifier.height(12.dp))
+            VoiceDownloadBanner(
+                voiceState = state.currentVoiceState,
+                onDownload = { onIntent(SettingsIntent.DownloadCurrentVoice) },
+                onDelete = { onIntent(SettingsIntent.DeleteCurrentVoice) }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))

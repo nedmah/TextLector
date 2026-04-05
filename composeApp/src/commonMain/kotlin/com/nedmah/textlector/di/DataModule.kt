@@ -23,6 +23,9 @@ import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import com.nedmah.textlector.domain.usecase.UpdatePreferencesUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.DeleteVoiceModelUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.DownloadVoiceModelUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.GetVoiceModelsUseCase
 import com.nedmah.textlector.ui.presentation.import_from.ImportViewModel
 import com.nedmah.textlector.ui.presentation.library.LibraryViewModel
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
@@ -57,8 +60,11 @@ val dataModule = module {
     factory { GetPreferencesUseCase(get()) }
     factory { UpdatePreferencesUseCase(get()) }
     factory { InputTextManuallyUseCase() }
-    factory { ImportDocumentUseCase(get())}
-    factory { SaveDocumentUseCase(get(), get() ) }
+    factory { ImportDocumentUseCase(get()) }
+    factory { SaveDocumentUseCase(get(), get()) }
+    factory { GetVoiceModelsUseCase(get()) }
+    factory { DownloadVoiceModelUseCase(get()) }
+    factory { DeleteVoiceModelUseCase(get()) }
 
     // ViewModels
     single {
@@ -69,8 +75,8 @@ val dataModule = module {
             get(),
             get(),
             get<TtsEngine>()
-        )
-    }  // koinInject() vor this one (when ios tts engine)
+        )  // koinInject() vor this one (when ios tts engine)
+    }
     viewModel {
         LibraryViewModel(
             get(),
@@ -83,5 +89,5 @@ val dataModule = module {
     }
     factory { ReaderViewModel(get(), get(), get(), get()) }
     factory { ImportViewModel(get(), get(), get()) }
-    factory { SettingsViewModel(get(), get()) }
+    factory { SettingsViewModel(get(), get(), get(), get(), get()) }
 }
