@@ -2,10 +2,12 @@ package com.nedmah.textlector.ui.presentation.import_from
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.domain.model.ImportProgress
 import com.nedmah.textlector.domain.model.SourceType
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
+import com.nedmah.textlector.ui.presentation.import_from.ImportEffect.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -111,14 +113,29 @@ class ImportViewModel(
         val title = uri.substringAfterLast("/").substringBeforeLast(".")
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy(isLoading = true, importProgress = null) }
             importDocumentUseCase(uri, title, sourceType)
-                .onSuccess { document ->
-                    _state.update { it.copy(isLoading = false, processedDocument = document) }
-                }
-                .onFailure { error ->
-                    _state.update { it.copy(isLoading = false) }
-                    _effect.send(ImportEffect.ShowError(error.message ?: "Import failed"))
+                .collect { progress ->
+                    when(progress){
+                        is ImportProgress.Processing -> {
+                            _state.update { it.copy(importProgress = progress) }
+                        }
+                        is ImportProgress.Success -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    importProgress = null,
+                                    processedDocument = progress.processedDocument
+                                )
+                            }
+                        }
+                        is ImportProgress.Error -> {
+                            _state.update { it.copy(isLoading = false, importProgress = null) }
+                            _effect.send(ShowError(progress.message))
+                        }
+
+                        ImportProgress.Segmenting -> _state.update { it.copy(importProgress = progress) }
+                    }
                 }
         }
     }

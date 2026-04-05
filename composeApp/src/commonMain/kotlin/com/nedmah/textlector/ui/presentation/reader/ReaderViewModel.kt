@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
+import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.ui.presentation.player.PlayerIntent
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 class ReaderViewModel(
     private val getDocumentUseCase: GetDocumentUseCase,
     private val getParagraphsUseCase: GetParagraphsUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val getPreferencesUseCase: GetPreferencesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ReaderState())
@@ -25,6 +27,10 @@ class ReaderViewModel(
 
     private val _effect = Channel<ReaderEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
+
+    init {
+        observePreferences()
+    }
 
     fun onIntent(intent: ReaderIntent) {
         when (intent) {
@@ -57,6 +63,14 @@ class ReaderViewModel(
                 getParagraphsUseCase(documentId).collect { paragraphs ->
                     _state.update { it.copy(paragraphs = paragraphs, isLoading = false) }
                 }
+            }
+        }
+    }
+
+    private fun observePreferences() {
+        viewModelScope.launch {
+            getPreferencesUseCase().collect { prefs ->
+                _state.update { it.copy(fontSize = prefs.fontSize) }
             }
         }
     }

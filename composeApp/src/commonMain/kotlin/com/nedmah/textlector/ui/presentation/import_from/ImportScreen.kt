@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -32,12 +33,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nedmah.textlector.domain.model.ImportProgress
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
@@ -56,7 +59,7 @@ import textlector.composeapp.generated.resources.ic_url
 fun ImportScreenRoot(
     onNavigateToReader: (String) -> Unit,
     viewModel: ImportViewModel = koinViewModel()
-){
+) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -73,7 +76,8 @@ fun ImportScreenRoot(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ImportEffect.NavigateToReader -> onNavigateToReader(effect.documentId)
-                is ImportEffect.ShowError -> { /* Snackbar */ }
+                is ImportEffect.ShowError -> { /* Snackbar */
+                }
             }
         }
     }
@@ -114,7 +118,7 @@ private fun ImportScreen(
     state: ImportState,
     onIntent: (ImportIntent) -> Unit,
     onPickFile: (String) -> Unit,
-){
+) {
 
     val focusManager = LocalFocusManager.current
 
@@ -196,6 +200,51 @@ private fun ImportScreen(
                 )
             }
 
+            when (val progress = state.importProgress) {
+                is ImportProgress.Processing -> {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Reading ${progress.current} of ${progress.total} pages...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = { progress.current.toFloat() / progress.total },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    }
+                }
+
+                is ImportProgress.Segmenting -> {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Analyzing text...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator( // indeterminate
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(3.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    }
+                }
+
+                else -> {}
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // URL и Camera — stubs
@@ -229,18 +278,38 @@ private fun ImportScreen(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = "Process Document",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
+                when (val progress = state.importProgress) {
+                    is ImportProgress.Processing -> {
+                        Text(
+                            text = "${progress.current}/${progress.total} pages",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
+
+                    is ImportProgress.Segmenting -> {
+                        Text(
+                            text = "Analyzing...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
+
+                    else -> {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "Process Document",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
 
@@ -254,8 +323,9 @@ private fun ImportScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-        }
 
+
+        }
     }
 
 }

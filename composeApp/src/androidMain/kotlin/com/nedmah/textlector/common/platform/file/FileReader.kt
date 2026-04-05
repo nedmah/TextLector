@@ -21,7 +21,7 @@ actual class FileReader(private val context: Context) {
             }
         }
 
-    actual suspend fun readPdf(uri: String): Result<String> =
+    actual suspend fun readPdf(uri: String, onProgress: (Int, Int) -> Unit): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
                 PDFBoxResourceLoader.init(context)
@@ -30,10 +30,19 @@ actual class FileReader(private val context: Context) {
                     ?: error("Cannot open stream for uri : $uri")
 
                 val document = PDDocument.load(inputStream)
+                val totalPages = document.numberOfPages
                 val stripper = PDFTextStripper()
-                val text = stripper.getText(document)
+                val sb = StringBuilder()
+
+                for (page in 1..totalPages) {
+                    stripper.startPage = page
+                    stripper.endPage = page
+                    sb.append(stripper.getText(document))
+                    onProgress(page, totalPages)
+                }
+
                 document.close()
-                text
+                sb.toString()
             }
         }
 }

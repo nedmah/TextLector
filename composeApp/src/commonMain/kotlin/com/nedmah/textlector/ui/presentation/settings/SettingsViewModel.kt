@@ -23,26 +23,21 @@ class SettingsViewModel(
 
     fun onIntent(intent: com.nedmah.textlector.ui.presentation.settings.SettingsIntent) {
         when (intent) {
-            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetSpeed -> {
-                _state.update { it.copy(preferences = it.preferences.copy(speechSpeed = intent.speed)) }
+            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetSpeed ->
                 viewModelScope.launch { updatePreferencesUseCase.setSpeed(intent.speed) }
-            }
-            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetFontSize -> {
-                _state.update { it.copy(preferences = it.preferences.copy(fontSize = intent.size)) }
+
+            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetFontSize ->
                 viewModelScope.launch { updatePreferencesUseCase.setFontSize(intent.size) }
-            }
-            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetDarkMode -> {
-                _state.update { it.copy(preferences = it.preferences.copy(isDarkMode = intent.enabled)) }
+
+            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetDarkMode ->
                 viewModelScope.launch { updatePreferencesUseCase.setDarkMode(intent.enabled) }
-            }
-            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetVoice -> {
-                _state.update { it.copy(preferences = it.preferences.copy(speechVoice = intent.gender)) }
+
+            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetVoice ->
                 viewModelScope.launch { updatePreferencesUseCase.setVoice(intent.gender) }
-            }
-            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetLanguage -> {
-                _state.update { it.copy(preferences = it.preferences.copy(language = intent.language)) }
+
+            is com.nedmah.textlector.ui.presentation.settings.SettingsIntent.SetLanguage ->
                 viewModelScope.launch { updatePreferencesUseCase.setLanguage(intent.language) }
-            }
+
         }
     }
 

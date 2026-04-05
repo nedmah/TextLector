@@ -106,6 +106,7 @@ fun ReaderScreen(
                 paragraphs = readerState.paragraphs,
                 currentParagraphIndex = playerState.currentParagraphIndex,
                 isPlaying = playerState.isPlaying,
+                fontSize = readerState.fontSize,
                 onParagraphClick = { index ->
                     onPlayerIntent(PlayerIntent.SeekToParagraph(index))
                     onPlayerIntent(PlayerIntent.Play)

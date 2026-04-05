@@ -1,14 +1,10 @@
 package com.nedmah.textlector.common.platform.file
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCObjectVar
-import kotlinx.cinterop.memScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import platform.Foundation.NSError
 import platform.Foundation.NSFileCoordinator
-import platform.Foundation.NSFileCoordinatorReadingOptions
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
@@ -44,7 +40,7 @@ actual class FileReader {
         }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun readPdf(uri: String): Result<String> =
+    actual suspend fun readPdf(uri: String, onProgress: (Int, Int) -> Unit): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
                 val nsUrl = NSURL.fileURLWithPath(uri)
@@ -58,9 +54,15 @@ actual class FileReader {
                 ) { url ->
                     url?.let {
                         val pdfDoc = PDFDocument(uRL = it) ?: return@let
-                        result = (0 until pdfDoc.pageCount.toInt())
-                            .mapNotNull { i -> pdfDoc.pageAtIndex(i.toULong())?.string }
-                            .joinToString("\n\n")
+                        val total = pdfDoc.pageCount.toInt()
+                        val sb = StringBuilder()
+
+                        for (i in 0 until total) {
+                            sb.append(pdfDoc.pageAtIndex(i.toULong())?.string ?: "")
+                            sb.append("\n\n")
+                            onProgress(i + 1, total)
+                        }
+                        result = sb.toString()
                     }
                 }
 

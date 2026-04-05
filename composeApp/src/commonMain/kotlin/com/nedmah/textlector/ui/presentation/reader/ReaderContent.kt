@@ -17,6 +17,7 @@ fun ReaderContent(
     paragraphs: List<Paragraph>,
     currentParagraphIndex: Int,
     isPlaying: Boolean,
+    fontSize: Int,
     onParagraphClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -47,6 +48,7 @@ fun ReaderContent(
             ParagraphItem(
                 paragraph = paragraph,
                 isHighlighted = index == currentParagraphIndex,
+                fontSize = fontSize,
                 onClick = { onParagraphClick(index) }
             )
         }

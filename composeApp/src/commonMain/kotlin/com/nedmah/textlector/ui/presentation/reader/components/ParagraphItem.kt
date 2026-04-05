@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nedmah.textlector.domain.model.Paragraph
@@ -32,6 +33,7 @@ fun ParagraphItem(
     paragraph: Paragraph,
     isHighlighted: Boolean,
     onClick: () -> Unit,
+    fontSize : Int,
     modifier: Modifier = Modifier
 ) {
 
@@ -72,6 +74,7 @@ fun ParagraphItem(
         Text(
             text = paragraph.text,
             style = MaterialTheme.typography.bodyLarge,
+            fontSize = fontSize.sp,
             color = if (isHighlighted)
                 MaterialTheme.colorScheme.onPrimaryContainer
             else
@@ -93,7 +96,8 @@ fun ParagraphItemPreview() {
                 text = "This is a sample paragraph text to demonstrate how the ParagraphItem looks in the reader view."
             ),
             isHighlighted = false,
-            onClick = {}
+            onClick = {},
+            fontSize = 20
         )
     }
 }
@@ -110,7 +114,8 @@ fun ParagraphItemHighlightedPreview() {
                 text = "This is a highlighted paragraph. It usually represents the paragraph currently being read aloud."
             ),
             isHighlighted = true,
-            onClick = {}
+            onClick = {},
+            fontSize = 14
         )
     }
 }
