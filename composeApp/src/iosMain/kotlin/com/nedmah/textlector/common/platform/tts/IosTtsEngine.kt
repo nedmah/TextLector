@@ -14,36 +14,38 @@ import platform.darwin.NSObject
 class IosTtsEngine : TtsEngine {
 
     private val synthesizer = AVSpeechSynthesizer()
-    private var onDoneCallback: (() -> Unit)? = null
+    private var pendingCallbacks = mutableMapOf<AVSpeechUtterance, () -> Unit>()  // we need to bind particular cb to utterance to avoid race
+
+    private val delegate = object : NSObject(), AVSpeechSynthesizerDelegateProtocol {
+        override fun speechSynthesizer(
+            synthesizer: AVSpeechSynthesizer,
+            didFinishSpeechUtterance: AVSpeechUtterance
+        ) {
+            pendingCallbacks.remove(didFinishSpeechUtterance)?.invoke()
+        }
+    }
 
     init {
         val audioSession = AVAudioSession.sharedInstance()
         audioSession.setCategory(AVAudioSessionCategoryPlayback, null)
         AVAudioSession.sharedInstance().setActive(true, null)
 
-        synthesizer.delegate = object : NSObject(), AVSpeechSynthesizerDelegateProtocol {
-            override fun speechSynthesizer(
-                synthesizer: AVSpeechSynthesizer,
-                didFinishSpeechUtterance: AVSpeechUtterance
-            ) {
-                onDoneCallback?.invoke()
-            }
-        }
+        synthesizer.delegate = delegate
     }
 
     override fun speak(text: String, speed: Float, onDone: () -> Unit) {
-        onDoneCallback = onDone
         val utterance = AVSpeechUtterance(string = text)
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate * speed
+        pendingCallbacks[utterance] = onDone
         synthesizer.speakUtterance(utterance)
     }
 
     override fun stop() {
+        pendingCallbacks.clear()
         synthesizer.stopSpeakingAtBoundary(platform.AVFAudio.AVSpeechBoundary.AVSpeechBoundaryImmediate)
     }
 
     override fun shutdown() {
         stop()
-        onDoneCallback = null
     }
 }

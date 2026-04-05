@@ -8,6 +8,7 @@ data class PlayerState(
     val paragraphs: List<Paragraph> = emptyList(),
     val currentParagraphIndex: Int = 0,
     val isPlaying: Boolean = false,
+    val isLoading: Boolean = false,
     val playbackSpeed: Float = 1f,
 ) {
     val currentParagraph: Paragraph?
@@ -15,7 +16,7 @@ data class PlayerState(
 
     val progress: Float
         get() = if (paragraphs.isEmpty()) 0f
-        else currentParagraphIndex.toFloat() / paragraphs.size
+        else currentParagraphIndex.toFloat() / (paragraphs.size - 1)
 
     val isLoaded: Boolean
         get() = document != null && paragraphs.isNotEmpty()

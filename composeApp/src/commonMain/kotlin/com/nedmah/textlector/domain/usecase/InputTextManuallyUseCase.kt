@@ -22,18 +22,10 @@ class InputTextManuallyUseCase(
         withContext(Dispatchers.IO){
             runCatching {
                 val segments = TextSegmenter.segment(text)
-                val paragraphs = segments
-                    .mapIndexed { index, paragraphText ->
-                        Paragraph(
-                            id = uuid4().toString(),
-                            documentId = "",
-                            index = index,
-                            text = paragraphText.trim()
-                        )
-                    }
+                val documentId = uuid4().toString() // ← сначала генерируем id
 
                 val document = Document(
-                    id = uuid4().toString(),
+                    id = documentId,
                     title = title,
                     sourceType = SourceType.Manual,
                     createdAt = Clock.System.now().toEpochMilliseconds(),
@@ -41,9 +33,18 @@ class InputTextManuallyUseCase(
                     isFavorite = false,
                     wordCount = text.split(Regex("\\s+")).size,
                     estimatedReadingMinutes = text.split(Regex("\\s+")).size / 200,
-                    totalParagraphs = paragraphs.size,
+                    totalParagraphs = segments.size,
                     lastParagraphIndex = 0
                 )
+
+                val paragraphs = segments.mapIndexed { index, paragraphText ->
+                    Paragraph(
+                        id = uuid4().toString(),
+                        documentId = documentId,
+                        index = index,
+                        text = paragraphText.trim()
+                    )
+                }
                 ProcessedDocument(document, paragraphs)
             }
         }

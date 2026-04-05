@@ -70,7 +70,7 @@ val dataModule = module {
             get(),
             get<TtsEngine>()
         )
-    }
+    }  // koinInject() vor this one (when ios tts engine)
     viewModel {
         LibraryViewModel(
             get(),

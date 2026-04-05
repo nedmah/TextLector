@@ -52,8 +52,21 @@ class ImportViewModel(
     private fun importManually() {
         val text = _state.value.manualText
 
-        val title = text.lines().firstOrNull { it.isNotBlank() }?.trim() ?: "Untitled"
-        val bodyText = text.lines().drop(1).joinToString("\n").trim()
+        val lines = text.lines()
+        val title: String
+        val bodyText: String
+
+        if (lines.size == 1) {
+            title = text.split(" ").take(5).joinToString(" ")
+            bodyText = text
+        } else {
+            title = lines.firstOrNull { it.isNotBlank() }?.trim() ?: "Untitled"
+            bodyText = lines.drop(1).joinToString("\n").trim()
+            if (bodyText.isBlank()) {
+                _state.update { it.copy(error = "Text cannot be empty") }
+                return
+            }
+        }
 
         if (bodyText.isBlank()) {
             _state.update { it.copy(error = "Text cannot be empty") }

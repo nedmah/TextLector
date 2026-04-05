@@ -16,17 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxDefaults
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,18 +29,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.model.DocumentSortOrder
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.library.components.FavoriteDocItem
 import com.nedmah.textlector.ui.presentation.library.components.LibrarySkeletonScreen
-import com.nedmah.textlector.ui.presentation.library.components.RecentDocItem
+import com.nedmah.textlector.ui.presentation.library.components.SwipeableDocItem
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
-import textlector.composeapp.generated.resources.ic_delete
 import textlector.composeapp.generated.resources.ic_sort
 import textlector.composeapp.generated.resources.ic_success
 
@@ -55,16 +47,18 @@ fun LibraryScreenRoot(
     onNavigateToReader: (String) -> Unit,
     onNavigateToImport: () -> Unit,
     viewModel: LibraryViewModel = koinViewModel()
-){
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         viewModel.effect.collect { eff ->
-            when(eff){
+            when (eff) {
                 is LibraryEffect.NavigateToReader -> onNavigateToReader(eff.documentId)
                 is LibraryEffect.NavigateToImport -> onNavigateToImport()
                 is LibraryEffect.ShowError -> { /* Snackbar */ }
-                LibraryEffect.DocumentDeleted -> { /* Snackbar */ }
+
+                LibraryEffect.DocumentDeleted -> { /* Snackbar */
+                }
             }
         }
     }
@@ -82,7 +76,7 @@ fun LibraryScreenRoot(
 private fun LibraryScreen(
     state: LibraryState,
     onIntent: (LibraryIntent) -> Unit
-){
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 80.dp) // for MiniPlayer
@@ -212,46 +206,15 @@ private fun LibraryScreen(
             items = state.recentDocs,
             key = { it.id }
         ) { document ->
-            val dismissState = rememberSwipeToDismissBoxState(
-                SwipeToDismissBoxValue.Settled,
-                SwipeToDismissBoxDefaults.positionalThreshold
-            )
 
-            SwipeToDismissBox(
-                state = dismissState,
-                enableDismissFromStartToEnd = false,
-                onDismiss = {
-                    onIntent(LibraryIntent.DeleteDocument(document.id))
-                },
-                backgroundContent = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp, vertical = 6.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.error,
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_delete),
-                            contentDescription = "Delete",
-                            tint = Color.White,
-                            modifier = Modifier.padding(end = 20.dp)
-                        )
-                    }
+            SwipeableDocItem(
+                document = document,
+                onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
+                onDelete = { onIntent(LibraryIntent.DeleteDocument(document.id)) },
+                onFavorite = {
+                    onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
                 }
-            ) {
-                RecentDocItem(
-                    document = document,
-                    onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
-                    onDelete = { onIntent(LibraryIntent.DeleteDocument(document.id)) },
-                    onToggleFavorite = {
-                        onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
-                    }
-                )
-            }
+            )
         }
     }
 
@@ -276,7 +239,7 @@ private fun SectionHeader(
             color = MaterialTheme.colorScheme.onBackground
         )
         if (trailingContent != null) {
-            val modifier = if(onAction != null){
+            val modifier = if (onAction != null) {
                 Modifier.clickable(onClick = onAction)
             } else {
                 Modifier

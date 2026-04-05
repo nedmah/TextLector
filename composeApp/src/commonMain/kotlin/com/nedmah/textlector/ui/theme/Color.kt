@@ -25,5 +25,5 @@ val OnSurfaceVariantDark = Color(0xFF9A9A9A)
 val OutlineDark = Color(0xFF3A3A3A)
 
 // Reader highlight
-val HighlightLight = Color(0xFFE8ECFF)
+val HighlightLight = Color(0xff9fafff)
 val HighlightDark = Color(0xFF2A3060)

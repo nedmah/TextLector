@@ -26,29 +26,31 @@ class PlayerViewModel(
     private val ttsEngine: TtsEngine
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(_root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerState())
+    private val _state = MutableStateFlow(PlayerState())
     val state = _state.asStateFlow()
 
-    private val _effect = Channel<com.nedmah.textlector.ui.presentation.player.PlayerEffect>(Channel.BUFFERED)
+    private val _effect = Channel<PlayerEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
     private var saveProgressJob: Job? = null
     private var playbackJob: Job? = null
 
+    private var currentUtteranceId: Int = 0
+
     init {
         observePreferences()
     }
 
-    fun onIntent(intent: com.nedmah.textlector.ui.presentation.player.PlayerIntent) {
+    fun onIntent(intent: PlayerIntent) {
         when (intent) {
-            is com.nedmah.textlector.ui.presentation.player.PlayerIntent.LoadDocument -> loadDocument(intent.documentId)
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerIntent.Play -> play()
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerIntent.Pause -> pause()
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerIntent.NextParagraph -> navigateParagraph(+1)
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerIntent.PreviousParagraph -> navigateParagraph(-1)
-            is com.nedmah.textlector.ui.presentation.player.PlayerIntent.SeekToParagraph -> seekTo(intent.index)
-            is com.nedmah.textlector.ui.presentation.player.PlayerIntent.ChangeSpeed -> changeSpeed(intent.speed)
-            _root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerIntent.Stop -> stop()
+            is PlayerIntent.LoadDocument -> loadDocument(intent.documentId)
+            PlayerIntent.Play -> play()
+            PlayerIntent.Pause -> pause()
+            PlayerIntent.NextParagraph -> navigateParagraph(+1)
+            PlayerIntent.PreviousParagraph -> navigateParagraph(-1)
+            is PlayerIntent.SeekToParagraph -> seekTo(intent.index)
+            is PlayerIntent.ChangeSpeed -> changeSpeed(intent.speed)
+            PlayerIntent.Stop -> stop()
         }
     }
 
@@ -61,36 +63,42 @@ class PlayerViewModel(
     }
 
     private fun loadDocument(documentId: String) {
-        if (_state.value.document?.id == documentId) {
-            return
-        }
+        if (_state.value.document?.id == documentId) return
 
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
             updateLastOpenedUseCase(documentId)
 
             launch {
                 getDocumentUseCase(documentId).collect { document ->
                     if (document == null) {
-                        _effect.send(_root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerEffect.ShowError("Document not found"))
+                        _effect.send(PlayerEffect.ShowError("Document not found"))
                         return@collect
                     }
-                    _state.update { it.copy(
-                        document = document,
-                        currentParagraphIndex = document.lastParagraphIndex
-                    )}
+                    _state.update {
+                        it.copy(
+                            document = document,
+                            currentParagraphIndex = document.lastParagraphIndex
+                        )
+                    }
                 }
             }
 
             launch {
                 getParagraphsUseCase(documentId).collect { paragraphs ->
-                    _state.update { it.copy(paragraphs = paragraphs) }
+                    _state.update { it.copy(paragraphs = paragraphs, isLoading = false) }
                 }
             }
         }
     }
 
     private fun play() {
+        if (!_state.value.isLoaded) return
+        if (!_state.value.isLoaded) return
         val paragraph = _state.value.currentParagraph ?: return
+
+        val utteranceId = ++currentUtteranceId
+        playbackJob?.cancel()
         ttsEngine.stop()
 
         _state.update { it.copy(isPlaying = true) }
@@ -100,13 +108,16 @@ class PlayerViewModel(
                 text = paragraph.text,
                 speed = _state.value.playbackSpeed,
                 onDone = {
-                    viewModelScope.launch { navigateParagraph(+1) }
+                    if (utteranceId == currentUtteranceId) {
+                        viewModelScope.launch { navigateParagraph(+1) }
+                    }
                 }
             )
         }
     }
 
     private fun pause() {
+        currentUtteranceId++
         playbackJob?.cancel()
         ttsEngine.stop()
         _state.update { it.copy(isPlaying = false) }
@@ -119,12 +130,13 @@ class PlayerViewModel(
 
     private fun navigateParagraph(delta: Int) {
         val current = _state.value
+        if (current.paragraphs.isEmpty()) return
         val newIndex = current.currentParagraphIndex + delta
 
         if (newIndex > current.paragraphs.lastIndex) {
             pause()
             viewModelScope.launch {
-                _effect.send(_root_ide_package_.com.nedmah.textlector.ui.presentation.player.PlayerEffect.PlaybackFinished)
+                _effect.send(PlayerEffect.PlaybackFinished)
             }
             return
         }
@@ -133,12 +145,13 @@ class PlayerViewModel(
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (current.isPlaying) {
+        if (_state.value.isPlaying) {
             play()
         }
     }
 
     private fun seekTo(index: Int) {
+        if (_state.value.paragraphs.isEmpty()) return
         val safeIndex = index.coerceIn(0, _state.value.paragraphs.lastIndex)
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)

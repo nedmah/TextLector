@@ -1,6 +1,8 @@
 package com.nedmah.textlector.common.platform.tts
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
@@ -31,10 +33,11 @@ class AndroidTtsEngine(
         tts?.setSpeechRate(speed)
         tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {}
-            override fun onDone(utteranceId: String?) { onDone() }
+            override fun onDone(utteranceId: String?) {
+                Handler(Looper.getMainLooper()).post { onDone() }  // bc playerVM updates state on main thread
+            }
             override fun onError(utteranceId: String?) {}
         })
-
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
     }
 

@@ -41,7 +41,7 @@ fun ManualTextInput(
     }
 
     val annotatedText = buildAnnotatedString {
-        val lines = text.lines()
+        val lines = textFieldValue.text.lines()
         lines.forEachIndexed { index, line ->
             if (index == 0) {
                 withStyle(

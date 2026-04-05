@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
 import org.jetbrains.compose.resources.painterResource
 import textlector.composeapp.generated.resources.Res
-import textlector.composeapp.generated.resources.ic_star
+import textlector.composeapp.generated.resources.ic_star_filled
 
 @Composable
 fun FavoriteDocItem(
@@ -74,7 +74,7 @@ fun FavoriteDocItem(
                 modifier = Modifier.align(Alignment.TopEnd)
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_star),
+                    painter = painterResource(Res.drawable.ic_star_filled),
                     contentDescription = "Remove from favorites",
                     tint = MaterialTheme.colorScheme.primary
                 )
