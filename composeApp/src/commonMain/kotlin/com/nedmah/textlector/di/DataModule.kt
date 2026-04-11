@@ -1,5 +1,6 @@
 package com.nedmah.textlector.di
 
+import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.DocumentRepositoryImpl
@@ -42,6 +43,7 @@ val dataModule = module {
 
     single { get<LectorDatabase>().documentQueries }
     single { get<LectorDatabase>().paragraphQueries }
+
 
     single<DocumentRepository> { DocumentRepositoryImpl(get()) }
     single<ParagraphRepository> { ParagraphRepositoryImpl(get()) }

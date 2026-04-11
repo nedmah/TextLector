@@ -31,6 +31,12 @@ actual val platformModule = module {
     // TTS engines
     single { AndroidTtsEngine(androidContext()) }
     single { AndroidSherpaOnnxTtsEngine(get()) }
-    single<TtsEngine> { SwitchableTtsEngine(get(), get(), get()) }
+    single<TtsEngine> {
+        SwitchableTtsEngine(
+            nativeEngine = AndroidTtsEngine(androidContext()),
+            sherpaEngine = AndroidSherpaOnnxTtsEngine(get()),
+            preferencesRepository = get()
+        )
+    }
 
 }

@@ -5,6 +5,10 @@ import ComposeApp
 struct iOSApp: App {
 
     init() {
+        let repo = IosVoiceModelRepositoryImpl()
+        let sherpaEngine = IosSherpaEngine(repository: repo)
+        IosEngineHolder.shared.ttsEngine = sherpaEngine
+        IosEngineHolder.shared.tarExtractor = IosTarExtractor()
         MainViewControllerKt.doInitKoin()
     }
 

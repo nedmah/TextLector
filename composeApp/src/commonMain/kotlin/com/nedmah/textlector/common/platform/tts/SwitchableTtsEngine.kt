@@ -9,8 +9,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class SwitchableTtsEngine(
-    private val nativeEngine: AndroidTtsEngine,
-    private val sherpaEngine: AndroidSherpaOnnxTtsEngine,
+    private val nativeEngine: TtsEngine,
+    private val sherpaEngine: TtsEngine,
     private val preferencesRepository: PreferencesRepository
 ) : TtsEngine {
 
