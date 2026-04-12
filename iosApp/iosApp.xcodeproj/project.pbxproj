@@ -36,22 +36,9 @@
 		92454D9B2F800EB300A0AF72 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		922B1CA22F8AFD4C00B75FC9 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Bz2Wrapper.h,
-			);
-			target = 4ADD6B8E473122E6DE3B7B6F /* iosApp */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		75BD6A9926E372E7AADD68C7 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				922B1CA22F8AFD4C00B75FC9 /* Exceptions for "iosApp" folder in "iosApp" target */,
-			);
 			path = iosApp;
 			sourceTree = "<group>";
 		};

@@ -146,7 +146,7 @@ class AndroidVoiceModelRepositoryImpl(
             downloadFile(VoiceRegistry.ESPEAK_DATA_URL, tarFile, onProgress = null)
             extractTarBz2(tarFile, modelsDir)
         } finally {
-            tarFile.delete() // архив больше не нужен
+            tarFile.delete() // no need for that archive now
         }
     }
 

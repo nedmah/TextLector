@@ -78,7 +78,14 @@ class IosVoiceModelRepositoryImpl : VoiceModelRepository {
 
             val onnxFile = modelDir.URLByAppendingPathComponent(model.onnxFileName)!!
             if (!fileManager.fileExistsAtPath(onnxFile.path!!)) {
-                downloadFile(model.onnxUrl, modelDir, model.onnxFileName)
+                stateFlow.value = ModelState.Downloading(0.1f)
+                emit(ModelState.Downloading(0.1f))
+                downloadOnnxWithProgress(
+                    url = model.onnxUrl,
+                    destPath = onnxFile.path!!
+                ) { progress ->
+                    stateFlow.value = ModelState.Downloading(0.1f + progress * 0.9f)
+                }
             }
 
             stateFlow.value = ModelState.Ready
@@ -139,5 +146,21 @@ class IosVoiceModelRepositoryImpl : VoiceModelRepository {
         }
         task.resume()
         continuation.invokeOnCancellation { task.cancel() }
+    }
+
+    private suspend fun downloadOnnxWithProgress(
+        url: String,
+        destPath: String,
+        onProgress : (Float) -> Unit,
+    ) = suspendCancellableCoroutine<Unit> { cont ->
+        IosEngineHolder.fileDownloader?.downloadFile(
+            url = url,
+            destPath = destPath,
+            onProgress = { progress -> onProgress(progress) },
+            onComplete = { success ->
+                if (success) cont.resume(Unit)
+                else cont.resumeWithException(Exception("Download failed"))
+            }
+        ) ?: cont.resumeWithException(Exception("FileDownloader not initialized"))
     }
 }

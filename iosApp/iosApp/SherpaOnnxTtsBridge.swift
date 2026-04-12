@@ -88,6 +88,24 @@ import Darwin
         audioPlayer?.stop()
     }
 
+    @objc public func downloadFile(
+        urlString: String,
+        destPath: String,
+        onProgress: @escaping (Float) -> Void,
+        onComplete: @escaping (Bool) -> Void
+    ) {
+        guard let url = URL(string: urlString) else {
+            onComplete(false)
+            return
+        }
+
+        let delegate = DownloadDelegate(destPath: destPath, onProgress: onProgress, onComplete: onComplete)
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+        let task = session.downloadTask(with: url)
+        delegate.task = task
+        task.resume()
+    }
+
     private func playAudioSync(samples: [Float], sampleRate: Int) {
         var data = Data(capacity: samples.count * 2)
         for sample in samples {
@@ -135,6 +153,46 @@ import Darwin
         header.append(contentsOf: "data".utf8)
         header.append(littleEndian: UInt32(dataSize))
         return header
+    }
+}
+
+private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
+    let destPath: String
+    let onProgress: (Float) -> Void
+    let onComplete: (Bool) -> Void
+    var task: URLSessionDownloadTask?
+
+    init(destPath: String, onProgress: @escaping (Float) -> Void, onComplete: @escaping (Bool) -> Void) {
+        self.destPath = destPath
+        self.onProgress = onProgress
+        self.onComplete = onComplete
+    }
+
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        let destURL = URL(fileURLWithPath: destPath)
+        do {
+            try FileManager.default.moveItem(at: location, to: destURL)
+            onComplete(true)
+        } catch {
+            print("DownloadDelegate: move error \(error)")
+            onComplete(false)
+        }
+    }
+
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
+                    didWriteData bytesWritten: Int64,
+                    totalBytesWritten: Int64,
+                    totalBytesExpectedToWrite: Int64) {
+        guard totalBytesExpectedToWrite > 0 else { return }
+        let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+        onProgress(progress)
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            print("DownloadDelegate: error \(error)")
+            onComplete(false)
+        }
     }
 }
 

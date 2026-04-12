@@ -9,6 +9,7 @@ struct iOSApp: App {
         let sherpaEngine = IosSherpaEngine(repository: repo)
         IosEngineHolder.shared.ttsEngine = sherpaEngine
         IosEngineHolder.shared.tarExtractor = IosTarExtractor()
+        IosEngineHolder.shared.fileDownloader = IosFileDownloader()
         MainViewControllerKt.doInitKoin()
     }
 
