@@ -9,6 +9,7 @@ androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
+commonsCompress = "1.27.1"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
 junit = "4.13.2"
@@ -18,6 +19,7 @@ kotlinx-coroutines = "1.10.2"
 material3 = "1.10.0-alpha05"
 koin = "4.1.0"
 multiplatform-settings = "1.3.0"
+sherpaOnnx = "1.12.34"
 sqldelight = "2.0.2"
 navigation = "2.9.0-beta01"
 okio = "3.9.0"
@@ -27,6 +29,7 @@ pdfbox-jvm = "2.0.27"
 kotlinx-serialization = "1.7.3"
 
 [libraries]
+commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -54,6 +57,7 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-composeViewModel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 
 # db
+sherpa-onnx-android = { module = "com.github.k2-fsa:sherpa-onnx", version.ref = "sherpaOnnx" }
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
 sqldelight-androidDriver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-nativeDriver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }

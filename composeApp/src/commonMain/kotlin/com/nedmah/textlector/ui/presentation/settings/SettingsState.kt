@@ -1,5 +1,6 @@
 package com.nedmah.textlector.ui.presentation.settings
 
+import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.UserPreferences
 import com.nedmah.textlector.domain.model.VoiceGender
 
@@ -10,5 +11,7 @@ data class SettingsState(
         fontSize = 16,
         isDarkMode = false,
         language = "en"
-    )
+    ),
+    val useSherpaEngine: Boolean = false,
+    val currentVoiceState: ModelState = ModelState.NotDownloaded
 )

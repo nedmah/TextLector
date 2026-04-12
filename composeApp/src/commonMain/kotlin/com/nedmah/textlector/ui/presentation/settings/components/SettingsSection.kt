@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nedmah.textlector.domain.model.ModelState
 import org.jetbrains.compose.resources.painterResource
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_success
@@ -119,6 +121,93 @@ fun EngineRow(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun VoiceDownloadBanner(
+    voiceState: ModelState,
+    onDownload: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        when (voiceState) {
+            is ModelState.NotDownloaded -> {
+                Text(
+                    text = "Voice model not downloaded",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Download",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onDownload() }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+
+            is ModelState.Downloading -> {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Downloading... ${(voiceState.progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = { voiceState.progress },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            is ModelState.Ready -> {
+                Text(
+                    text = "Voice model ready",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Delete",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onDelete() }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+
+            is ModelState.Error -> {
+                Text(
+                    text = "Download failed",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "Retry",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onDownload() }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
         }
     }
 }

@@ -5,7 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import com.nedmah.textlector.domain.model.VoiceModel
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
+import kotlin.coroutines.resume
 
 class AndroidTtsEngine(
     private val context: Context
@@ -27,19 +30,27 @@ class AndroidTtsEngine(
         }
     }
 
-    override fun speak(text: String, speed: Float, onDone: () -> Unit) {
+    override suspend fun speak(text: String, speed: Float) {
         if (!isReady) return
 
-        tts?.setSpeechRate(speed)
-        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {}
-            override fun onDone(utteranceId: String?) {
-                Handler(Looper.getMainLooper()).post { onDone() }  // bc playerVM updates state on main thread
-            }
-            override fun onError(utteranceId: String?) {}
-        })
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
+        suspendCancellableCoroutine { cont ->
+            tts?.setSpeechRate(speed)
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {}
+                override fun onDone(utteranceId: String?) {
+                    cont.resume(Unit)
+                }
+                override fun onError(utteranceId: String?) {
+                    cont.resume(Unit)
+                }
+            })
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
+
+            cont.invokeOnCancellation { tts?.stop() }
+        }
     }
+
+    override suspend fun loadVoice(model: VoiceModel) = Unit
 
     override fun stop() {
         tts?.stop()

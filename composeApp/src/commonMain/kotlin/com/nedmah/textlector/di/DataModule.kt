@@ -1,5 +1,6 @@
 package com.nedmah.textlector.di
 
+import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.DocumentRepositoryImpl
@@ -23,6 +24,9 @@ import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import com.nedmah.textlector.domain.usecase.UpdatePreferencesUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.DeleteVoiceModelUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.DownloadVoiceModelUseCase
+import com.nedmah.textlector.domain.usecase.voice_model.GetVoiceModelsUseCase
 import com.nedmah.textlector.ui.presentation.import_from.ImportViewModel
 import com.nedmah.textlector.ui.presentation.library.LibraryViewModel
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
@@ -39,6 +43,7 @@ val dataModule = module {
 
     single { get<LectorDatabase>().documentQueries }
     single { get<LectorDatabase>().paragraphQueries }
+
 
     single<DocumentRepository> { DocumentRepositoryImpl(get()) }
     single<ParagraphRepository> { ParagraphRepositoryImpl(get()) }
@@ -57,8 +62,11 @@ val dataModule = module {
     factory { GetPreferencesUseCase(get()) }
     factory { UpdatePreferencesUseCase(get()) }
     factory { InputTextManuallyUseCase() }
-    factory { ImportDocumentUseCase(get())}
-    factory { SaveDocumentUseCase(get(), get() ) }
+    factory { ImportDocumentUseCase(get()) }
+    factory { SaveDocumentUseCase(get(), get()) }
+    factory { GetVoiceModelsUseCase(get()) }
+    factory { DownloadVoiceModelUseCase(get()) }
+    factory { DeleteVoiceModelUseCase(get()) }
 
     // ViewModels
     single {
@@ -69,8 +77,8 @@ val dataModule = module {
             get(),
             get(),
             get<TtsEngine>()
-        )
-    }  // koinInject() vor this one (when ios tts engine)
+        )  // koinInject() vor this one (when ios tts engine)
+    }
     viewModel {
         LibraryViewModel(
             get(),
@@ -83,5 +91,5 @@ val dataModule = module {
     }
     factory { ReaderViewModel(get(), get(), get(), get()) }
     factory { ImportViewModel(get(), get(), get()) }
-    factory { SettingsViewModel(get(), get()) }
+    factory { SettingsViewModel(get(), get(), get(), get(), get()) }
 }

@@ -17,3 +17,9 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+# TTS models
+*.onnx
+espeak-ng-data/
+espeak-ng-data.tar.bz2
+*.tar.bz2
+tts_models/

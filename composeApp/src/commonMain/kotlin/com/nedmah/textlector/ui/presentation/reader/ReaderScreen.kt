@@ -84,7 +84,7 @@ fun ReaderScreen(
                 onPrevious = { onPlayerIntent(PlayerIntent.PreviousParagraph) },
                 onSpeedChange = { /* позже — bottom sheet со скоростями */ },
                 progress = playerState.progress,
-                isEnabled = playerState.isLoaded,
+                isEnabled = playerState.isLoaded && !playerState.isLoading,
                 isLoading = playerState.isLoading,
                 onSeek = { fraction ->
                     val index = (fraction * playerState.paragraphs.size).toInt()

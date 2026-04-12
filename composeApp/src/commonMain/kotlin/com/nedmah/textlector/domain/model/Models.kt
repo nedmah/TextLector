@@ -41,7 +41,16 @@ data class UserPreferences(
     val speechVoice: VoiceGender,
     val fontSize: Int,
     val isDarkMode: Boolean,
-    val language: String
-)
+    val language: String,
+    val useSherpaEngine: Boolean = false,
+) {
+    fun resolveVoiceId(): VoiceId =
+        when {
+            this.language == "ru" && this.speechVoice == VoiceGender.MALE -> VoiceId.RU_MALE
+            this.language == "ru" && this.speechVoice == VoiceGender.FEMALE -> VoiceId.RU_FEMALE
+            this.language == "en" && this.speechVoice == VoiceGender.MALE -> VoiceId.EN_MALE
+            else -> VoiceId.EN_FEMALE
+        }
+}
 
 enum class VoiceGender { MALE, FEMALE}
