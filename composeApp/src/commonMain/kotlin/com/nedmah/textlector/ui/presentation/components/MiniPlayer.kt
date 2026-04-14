@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import textlector.composeapp.generated.resources.ic_text_doc
 fun MiniPlayer(
     title: String,
     isPlaying: Boolean,
+    isBuffering: Boolean,
     progress: Float,
     onTap: () -> Unit,
     onPlayPause: () -> Unit,
@@ -71,15 +73,23 @@ fun MiniPlayer(
                     onClick = onPlayPause,
                     modifier = Modifier.size(36.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(
-                            if (isPlaying) Res.drawable.ic_pause
-                            else Res.drawable.ic_play
-                        ),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (isBuffering) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(
+                                if (isPlaying) Res.drawable.ic_pause
+                                else Res.drawable.ic_play
+                            ),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
