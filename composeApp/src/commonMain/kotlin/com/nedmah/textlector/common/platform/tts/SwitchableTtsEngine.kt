@@ -48,4 +48,7 @@ class SwitchableTtsEngine(
         nativeEngine.shutdown()
         sherpaEngine.shutdown()
     }
+
+    override fun piperEngine(): PiperTtsEngine? = active as? PiperTtsEngine
+
 }

@@ -47,6 +47,7 @@ fun TextLectorNavGraph() {
                         MiniPlayer(
                             title = playerState.document?.title ?: "",
                             isPlaying = playerState.isPlaying,
+                            isBuffering = playerState.isBuffering,
                             progress = playerState.progress,
                             onTap = {
                                 playerState.document?.id?.let { id ->

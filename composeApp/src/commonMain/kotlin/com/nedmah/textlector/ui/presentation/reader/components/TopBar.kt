@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.ic_chevron_left
 import textlector.composeapp.generated.resources.ic_chevron_right
 import textlector.composeapp.generated.resources.ic_star_empty
 import textlector.composeapp.generated.resources.ic_star_filled
@@ -34,7 +35,7 @@ fun ReaderTopBar(
     ) {
         IconButton(onClick = onNavigateBack) {
             Icon(
-                painter = painterResource(Res.drawable.ic_chevron_right),
+                painter = painterResource(Res.drawable.ic_chevron_left),
                 contentDescription = "Back",
                 tint = MaterialTheme.colorScheme.onBackground
             )

@@ -10,10 +10,13 @@ import AVFAudio
 import Darwin
 
 
-@objc public class SherpaOnnxTtsBridge: NSObject {
+@objc public class SherpaOnnxTtsBridge: NSObject, AVAudioPlayerDelegate {
 
     private var tts: SherpaOnnxOfflineTtsWrapper?
     private var audioPlayer: AVAudioPlayer?
+    private var currentSemaphore: DispatchSemaphore?
+    private var currentToken: Int = 0
+    private let generateQueue = DispatchQueue(label: "com.lector.sherpa.generate")
 
 
     @objc public func extractTarBz2(archivePath: String, destPath: String) -> Bool {
@@ -71,7 +74,12 @@ import Darwin
             tokens: tokensPath,
             dataDir: espeakDataPath
         )
-        let modelConfig = sherpaOnnxOfflineTtsModelConfig(vits: vitsConfig)
+        let modelConfig = sherpaOnnxOfflineTtsModelConfig(
+            vits: vitsConfig,
+            numThreads: 4,
+            debug: 0,
+            provider: "cpu"
+        )
         var config = sherpaOnnxOfflineTtsConfig(model: modelConfig)
         withUnsafePointer(to: &config) { ptr in
             tts = SherpaOnnxOfflineTtsWrapper(config: ptr)
@@ -85,7 +93,10 @@ import Darwin
     }
 
     @objc public func stop() {
+        currentToken += 1
         audioPlayer?.stop()
+        currentSemaphore?.signal()
+        currentSemaphore = nil
     }
 
     @objc public func downloadFile(
@@ -106,6 +117,70 @@ import Darwin
         task.resume()
     }
 
+    @objc public func generateAudio(text: String, speed: Float) -> Data {
+        var result = Data()
+        let myToken = self.currentToken
+        generateQueue.sync {
+            guard let tts = self.tts else { return }
+
+            final class CallbackContext {
+                weak var owner: SherpaOnnxTtsBridge?
+                let token: Int
+                init(_ owner: SherpaOnnxTtsBridge, _ token: Int) {
+                    self.owner = owner
+                    self.token = token
+                }
+            }
+
+            let ctx = CallbackContext(self, myToken)
+            let rawCtx = Unmanaged.passRetained(ctx).toOpaque()
+            defer { Unmanaged<CallbackContext>.fromOpaque(rawCtx).release() }
+
+            let audioResult = tts.generateWithCallbackWithArg(
+                text: text,
+                callback: { _, _, rawArg -> Int32 in
+                    guard let rawArg else { return 0 }
+                    let ctx = Unmanaged<CallbackContext>.fromOpaque(rawArg).takeUnretainedValue()
+                    return ctx.owner?.currentToken == ctx.token ? 1 : 0
+                },
+                arg: rawCtx,
+                sid: 0,
+                speed: speed
+            )
+
+            guard self.currentToken == myToken else { return }
+
+            let samples = audioResult.samples
+            guard !samples.isEmpty else { return }
+
+            var data = Data(capacity: samples.count * 2)
+            for sample in samples {
+                let clamped = max(-1.0, min(1.0, sample))
+                let intSample = Int16(clamped * Float(Int16.max))
+                withUnsafeBytes(of: intSample) { data.append(contentsOf: $0) }
+            }
+            var wav = self.makeWavHeader(dataSize: data.count, sampleRate: Int(audioResult.sampleRate))
+            wav.append(data)
+            result = wav
+        }
+        return result
+    }
+
+    @objc public func playWav(data: Data) {
+        playWavData(data)
+    }
+
+    public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        currentSemaphore?.signal()
+        currentSemaphore = nil
+    }
+
+    public func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        print("[SherpaOnnxBridge] decode error: \(error?.localizedDescription ?? "unknown")")
+        currentSemaphore?.signal()
+        currentSemaphore = nil
+    }
+
     private func playAudioSync(samples: [Float], sampleRate: Int) {
         var data = Data(capacity: samples.count * 2)
         for sample in samples {
@@ -115,17 +190,18 @@ import Darwin
         }
         var wav = makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
         wav.append(data)
+        playWavData(wav)
+    }
 
-        guard let player = try? AVAudioPlayer(data: wav) else { return }
+    private func playWavData(_ data: Data) {
+        guard let player = try? AVAudioPlayer(data: data) else { return }
         audioPlayer = player
+        player.delegate = self
+        let sem = DispatchSemaphore(value: 0)
+        currentSemaphore = sem
         player.play()
-
-        let semaphore = DispatchSemaphore(value: 0)
-        let duration = player.duration
-        DispatchQueue.global().asyncAfter(deadline: .now() + duration) {
-            semaphore.signal()
-        }
-        semaphore.wait()
+        sem.wait()
+        currentSemaphore = nil
     }
 
     private func playPCM(data: Data, sampleRate: Int) {

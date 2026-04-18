@@ -7,4 +7,5 @@ interface TtsEngine {
     suspend fun loadVoice(model: VoiceModel)
     fun stop()
     fun shutdown()
+    fun piperEngine(): PiperTtsEngine? = null
 }

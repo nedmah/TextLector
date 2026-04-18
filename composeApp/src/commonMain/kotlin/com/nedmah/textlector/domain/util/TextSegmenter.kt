@@ -3,7 +3,7 @@ package com.nedmah.textlector.domain.util
 
 object TextSegmenter {
     private const val MIN_PARAGRAPHS = 3
-    private const val MAX_WORDS_PER_PARAGRAPH = 150
+    private const val MAX_WORDS_PER_PARAGRAPH = 100
     private const val MIN_WORDS_PER_PARAGRAPH = 20
 
     fun segment(text: String): List<String> {

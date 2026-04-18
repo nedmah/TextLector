@@ -3,10 +3,7 @@ package com.nedmah.textlector.ui.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nedmah.textlector.common.platform.tts.TtsEngine
-import com.nedmah.textlector.domain.model.UserPreferences
-import com.nedmah.textlector.domain.model.VoiceGender
-import com.nedmah.textlector.domain.model.VoiceId
-import com.nedmah.textlector.domain.model.VoiceRegistry
+import com.nedmah.textlector.common.platform.tts.TtsQueue
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
@@ -20,6 +17,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val PLAYER_LOGS = true
+
+private fun playerLog(message: String) {
+    if (PLAYER_LOGS) println("[PlayerVM] $message")
+}
 
 class PlayerViewModel(
     private val getDocumentUseCase: GetDocumentUseCase,
@@ -35,6 +38,8 @@ class PlayerViewModel(
 
     private val _effect = Channel<PlayerEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
+
+    private var ttsQueue: TtsQueue? = null
 
     private var saveProgressJob: Job? = null
     private var playbackJob: Job? = null
@@ -62,6 +67,15 @@ class PlayerViewModel(
         viewModelScope.launch {
             getPreferencesUseCase().collect { prefs ->
                 _state.update { it.copy(playbackSpeed = prefs.speechSpeed) }
+
+                val piper = ttsEngine.piperEngine()
+                when {
+                    piper != null && ttsQueue == null -> ttsQueue = TtsQueue(piper)
+                    piper == null && ttsQueue != null -> {
+                        ttsQueue?.clear()
+                        ttsQueue = null
+                    }
+                }
             }
         }
     }
@@ -100,27 +114,77 @@ class PlayerViewModel(
         if (!_state.value.isLoaded) return
         if (_state.value.isLoading) return
         val paragraph = _state.value.currentParagraph ?: return
+        val currentIndex = _state.value.currentParagraphIndex
+        val paragraphs = _state.value.paragraphs
+        val speed = _state.value.playbackSpeed
+
+        if (ttsQueue == null) {
+            ttsEngine.piperEngine()?.let {
+                ttsQueue = TtsQueue(it)
+                playerLog("play: TtsQueue создан (lazy init)")
+            }  // if observePreferences didn't create it
+        }
 
         val utteranceId = ++currentUtteranceId
         playbackJob?.cancel()
         ttsEngine.stop()
-
         _state.update { it.copy(isPlaying = true) }
 
+        playerLog("play(index=$currentIndex, utterance=$utteranceId, speed=$speed)")
+
         playbackJob = viewModelScope.launch {
-            ttsEngine.speak(
-                text = paragraph.text,
-                speed = _state.value.playbackSpeed,
-            )
-            if (utteranceId == currentUtteranceId){
+            val queue = ttsQueue
+
+            if (queue != null) {
+                val cached = queue.getCachedAudio(currentIndex)
+                playerLog("queue=${if (cached != null) "CACHE HIT" else "CACHE MISS"} для index=$currentIndex")
+
+                if (cached == null) {
+                    _state.update { it.copy(isBuffering = true) }
+                }
+
+                val audio = try {
+                    queue.getAudio(currentIndex, paragraph.text, speed)
+                } finally {
+                    _state.update { it.copy(isBuffering = false) }
+                }  // getAudio: instant if prefetch already worked, otherwise generate
+
+                if (utteranceId != currentUtteranceId) {
+                    playerLog("utteranceId устарел после getAudio ($utteranceId != $currentUtteranceId), выхожу")
+                    return@launch
+                }
+
+                queue.prefetchAhead(currentIndex, paragraphs, speed)
+                // one more check because
+                // CACHE HIT + fast double-next can skip first check
+                if (utteranceId != currentUtteranceId) {
+                    playerLog("utteranceId устарел перед playAudio ($utteranceId != $currentUtteranceId), выхожу")
+                    return@launch
+                }
+
+                playerLog("playAudio($currentIndex) начинаю, размер=${audio.size}b")
+                ttsEngine.piperEngine()?.playAudio(audio)
+                playerLog("playAudio($currentIndex) завершён")
+
+            } else {
+                playerLog("Native TTS path: speak($currentIndex)")
+                ttsEngine.speak(paragraph.text, speed)
+                playerLog("speak($currentIndex) завершён")
+            }
+            if (utteranceId == currentUtteranceId) {
+                playerLog("navigateParagraph(+1) от index=$currentIndex")
                 navigateParagraph(+1)
+            }else {
+                playerLog("utteranceId устарел после playback ($utteranceId != $currentUtteranceId), навигацию пропускаю")
             }
         }
     }
 
     private fun pause() {
+        playerLog("pause() utterance=$currentUtteranceId")
         currentUtteranceId++
         playbackJob?.cancel()
+        ttsQueue?.clear()
         ttsEngine.stop()
         _state.update { it.copy(isPlaying = false) }
     }
@@ -143,7 +207,12 @@ class PlayerViewModel(
             return
         }
 
+        if (delta < 0) {
+            playerLog("navigateParagraph(-1): clear queue")
+            ttsQueue?.clear()
+        }
         val safeIndex = newIndex.coerceIn(0, current.paragraphs.lastIndex)
+        playerLog("navigateParagraph($delta): ${current.currentParagraphIndex} → $safeIndex")
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
@@ -155,6 +224,8 @@ class PlayerViewModel(
     private fun seekTo(index: Int) {
         if (_state.value.paragraphs.isEmpty()) return
         val safeIndex = index.coerceIn(0, _state.value.paragraphs.lastIndex)
+        playerLog("seekTo($safeIndex): clear queue")
+        ttsQueue?.clear()
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
@@ -183,5 +254,6 @@ class PlayerViewModel(
     override fun onCleared() {
         super.onCleared()
         ttsEngine.shutdown()
+        ttsQueue?.shutdown()
     }
 }

@@ -9,6 +9,7 @@ data class PlayerState(
     val currentParagraphIndex: Int = 0,
     val isPlaying: Boolean = false,
     val isLoading: Boolean = false,
+    val isBuffering: Boolean = false, // generating audio
     val playbackSpeed: Float = 1f,
 ) {
     val currentParagraph: Paragraph?

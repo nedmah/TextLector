@@ -10,6 +10,7 @@ struct iOSApp: App {
         IosEngineHolder.shared.ttsEngine = sherpaEngine
         IosEngineHolder.shared.tarExtractor = IosTarExtractor()
         IosEngineHolder.shared.fileDownloader = IosFileDownloader()
+        IosEngineHolder.shared.pdfExtractor = IosPdfPageExtractor()
         MainViewControllerKt.doInitKoin()
     }
 
