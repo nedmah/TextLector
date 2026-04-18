@@ -155,6 +155,13 @@ class PlayerViewModel(
                 }
 
                 queue.prefetchAhead(currentIndex, paragraphs, speed)
+                // one more check because
+                // CACHE HIT + fast double-next can skip first check
+                if (utteranceId != currentUtteranceId) {
+                    playerLog("utteranceId устарел перед playAudio ($utteranceId != $currentUtteranceId), выхожу")
+                    return@launch
+                }
+
                 playerLog("playAudio($currentIndex) начинаю, размер=${audio.size}b")
                 ttsEngine.piperEngine()?.playAudio(audio)
                 playerLog("playAudio($currentIndex) завершён")
