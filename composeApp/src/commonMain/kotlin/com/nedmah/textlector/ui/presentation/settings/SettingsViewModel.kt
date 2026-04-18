@@ -2,9 +2,12 @@ package com.nedmah.textlector.ui.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.common.platform.tts.TtsEngine
+import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.UserPreferences
 import com.nedmah.textlector.domain.model.VoiceGender
 import com.nedmah.textlector.domain.model.VoiceId
+import com.nedmah.textlector.domain.model.VoiceRegistry
 import com.nedmah.textlector.domain.repository.VoiceModelRepository
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.UpdatePreferencesUseCase
@@ -21,7 +24,8 @@ class SettingsViewModel(
     private val updatePreferencesUseCase: UpdatePreferencesUseCase,
     private val downloadVoiceModelUseCase: DownloadVoiceModelUseCase,
     private val deleteVoiceModelUseCase: DeleteVoiceModelUseCase,
-    private val modelRepository: VoiceModelRepository
+    private val modelRepository: VoiceModelRepository,
+    private val ttsEngine: TtsEngine
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(_root_ide_package_.com.nedmah.textlector.ui.presentation.settings.SettingsState())
@@ -84,6 +88,11 @@ class SettingsViewModel(
         downloadJob = viewModelScope.launch {
             downloadVoiceModelUseCase(id).collect { modelState ->
                 _state.update { it.copy(currentVoiceState = modelState) }
+
+                if (modelState is ModelState.Ready) {
+                    val model = VoiceRegistry.getById(id)
+                    ttsEngine.loadVoice(model)
+                }
             }
         }
     }
