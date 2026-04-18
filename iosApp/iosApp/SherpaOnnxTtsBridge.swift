@@ -119,20 +119,47 @@ import Darwin
 
     @objc public func generateAudio(text: String, speed: Float) -> Data {
         var result = Data()
+        let myToken = self.currentToken
         generateQueue.sync {
-            let myToken = self.currentToken
             guard let tts = self.tts else { return }
-            let audio = tts.generate(text: text, sid: 0, speed: speed)
-            guard self.currentToken == myToken else { return }
-            var data = Data(capacity: audio.samples.count * 2)
-            for sample in audio.samples {
-                let clamped = max(-1.0, min(1.0, sample))
-                let intSample = Int16(clamped * Float(Int16.max))
-                withUnsafeBytes(of: intSample) {
-                    data.append(contentsOf: $0)
+
+            final class CallbackContext {
+                weak var owner: SherpaOnnxTtsBridge?
+                let token: Int
+                init(_ owner: SherpaOnnxTtsBridge, _ token: Int) {
+                    self.owner = owner
+                    self.token = token
                 }
             }
-            var wav = self.makeWavHeader(dataSize: data.count, sampleRate: Int(audio.sampleRate))
+
+            let ctx = CallbackContext(self, myToken)
+            let rawCtx = Unmanaged.passRetained(ctx).toOpaque()
+            defer { Unmanaged<CallbackContext>.fromOpaque(rawCtx).release() }
+
+            let audioResult = tts.generateWithCallbackWithArg(
+                text: text,
+                callback: { _, _, rawArg -> Int32 in
+                    guard let rawArg else { return 0 }
+                    let ctx = Unmanaged<CallbackContext>.fromOpaque(rawArg).takeUnretainedValue()
+                    return ctx.owner?.currentToken == ctx.token ? 1 : 0
+                },
+                arg: rawCtx,
+                sid: 0,
+                speed: speed
+            )
+
+            guard self.currentToken == myToken else { return }
+
+            let samples = audioResult.samples
+            guard !samples.isEmpty else { return }
+
+            var data = Data(capacity: samples.count * 2)
+            for sample in samples {
+                let clamped = max(-1.0, min(1.0, sample))
+                let intSample = Int16(clamped * Float(Int16.max))
+                withUnsafeBytes(of: intSample) { data.append(contentsOf: $0) }
+            }
+            var wav = self.makeWavHeader(dataSize: data.count, sampleRate: Int(audioResult.sampleRate))
             wav.append(data)
             result = wav
         }

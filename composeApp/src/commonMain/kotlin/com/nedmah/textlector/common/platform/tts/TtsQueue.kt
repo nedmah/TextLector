@@ -156,6 +156,7 @@ class TtsQueue(
             }
         }
 
+        mutex.withLock { pending.remove(index) }
         return deferred.await()
     }
 
