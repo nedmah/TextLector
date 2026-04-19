@@ -1,5 +1,9 @@
 package com.nedmah.textlector.common.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,7 +77,11 @@ fun TextLectorNavGraph() {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             NavHost(
                 navController = navController,
-                startDestination = LibraryRoute
+                startDestination = LibraryRoute,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
             ) {
                 composable<LibraryRoute> {
                     com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot(
@@ -94,7 +102,22 @@ fun TextLectorNavGraph() {
                     )
                 }
 
-                composable<ReaderRoute> { backStackEntry ->
+                composable<ReaderRoute>(
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(320)
+                        )
+                    },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(320)
+                        )
+                    }
+                ) { backStackEntry ->
                     val route = backStackEntry.toRoute<ReaderRoute>()
                     com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot(
                         documentId = route.documentId,

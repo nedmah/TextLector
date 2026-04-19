@@ -6,6 +6,16 @@ A free, offline text-to-speech reader for Android and iOS, built with Kotlin Mul
  
 ---
 
+## Screenshots
+
+<p float="left">
+  <img src="screenshots/library.png" width="200"/>
+  <img src="screenshots/reader.png" width="200"/>
+  <img src="screenshots/settings.png" width="200"/>
+</p>
+
+---
+
 ## Features
 
 - **Import** — PDF, TXT, or paste text manually

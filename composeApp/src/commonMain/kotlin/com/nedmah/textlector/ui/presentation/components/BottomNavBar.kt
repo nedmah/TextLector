@@ -1,11 +1,16 @@
 package com.nedmah.textlector.ui.presentation.components
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nedmah.textlector.common.navigation.ImportRoute
@@ -51,21 +56,30 @@ fun BottomNavBar(navController: NavController) {
     )
 
     NavigationBar {
-        items.forEach { item ->
-            NavigationBarItem(
-                selected = currentRoute?.contains(
-                    item.route::class.qualifiedName ?: ""
-                ) == true,
-                onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(LibraryRoute) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = item.icon,
-                label = { Text(item.label) }
-            )
+        CompositionLocalProvider(LocalRippleConfiguration provides null) {
+            items.forEach { item ->
+                NavigationBarItem(
+                    selected = currentRoute?.contains(
+                        item.route::class.qualifiedName ?: ""
+                    ) == true,
+                    onClick = {
+                        navController.navigate(item.route) {
+                            popUpTo(LibraryRoute) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    icon = item.icon,
+                    label = { Text(item.label) },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                )
+            }
         }
     }
 

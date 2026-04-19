@@ -15,6 +15,7 @@ import org.jetbrains.compose.resources.painterResource
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_camera
 import textlector.composeapp.generated.resources.ic_pdf_doc
+import textlector.composeapp.generated.resources.ic_text_doc
 import textlector.composeapp.generated.resources.ic_url
 
 @Composable
@@ -26,7 +27,7 @@ fun DocTypeIcon(
         is SourceType.Pdf -> painterResource(Res.drawable.ic_pdf_doc) to MaterialTheme.colorScheme.error
         is SourceType.Url -> painterResource(Res.drawable.ic_url) to MaterialTheme.colorScheme.primary
         SourceType.Camera -> painterResource(Res.drawable.ic_camera) to MaterialTheme.colorScheme.onSurfaceVariant
-        else -> painterResource(Res.drawable.ic_pdf_doc) to MaterialTheme.colorScheme.onSurfaceVariant
+        else -> painterResource(Res.drawable.ic_text_doc) to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Box(
