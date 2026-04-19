@@ -20,8 +20,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nedmah.textlector.ui.presentation.components.BottomNavBar
 import com.nedmah.textlector.ui.presentation.components.MiniPlayer
+import com.nedmah.textlector.ui.presentation.import_from.ImportScreenRoot
+import com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot
 import com.nedmah.textlector.ui.presentation.player.PlayerIntent
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
+import com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot
+import com.nedmah.textlector.ui.presentation.settings.SettingsScreenRoot
 import org.koin.compose.koinInject
 
 @Composable

@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,6 +10,11 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlinSerialization)
+}
+
+
+val localProps = Properties().apply {
+    rootProject.file("local.properties").inputStream().use { load(it) }
 }
 
 kotlin {
@@ -116,9 +122,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("textlector.jks")
+            storePassword = localProps["KEYSTORE_PASSWORD"] as String
+            keyAlias = "textlector"
+            keyPassword = localProps["KEY_PASSWORD"] as String
+        }
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -139,6 +154,17 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.nedmah.textlector"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                val versionName = output.versionName.get() ?: "1.0"
+                output.outputFileName = "TextLector-v${versionName}.apk"
+            }
         }
     }
 }

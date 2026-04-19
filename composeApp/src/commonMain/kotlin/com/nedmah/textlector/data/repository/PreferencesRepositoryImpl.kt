@@ -2,6 +2,7 @@ package com.nedmah.textlector.data.repository
 
 import com.nedmah.textlector.domain.model.UserPreferences
 import com.nedmah.textlector.domain.model.VoiceGender
+import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.repository.PreferencesRepository
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
