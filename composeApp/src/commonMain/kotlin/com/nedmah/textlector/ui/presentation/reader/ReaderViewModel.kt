@@ -6,8 +6,6 @@ import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
-import com.nedmah.textlector.ui.presentation.player.PlayerIntent
-import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

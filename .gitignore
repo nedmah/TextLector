@@ -4,7 +4,6 @@
 **/build/
 xcuserdata
 !src/**/build/
-local.properties
 .idea
 .DS_Store
 captures
@@ -17,9 +16,25 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
 # TTS models
 *.onnx
 espeak-ng-data/
 espeak-ng-data.tar.bz2
 *.tar.bz2
 tts_models/
+
+# Local
+local.properties
+*.local.properties
+
+# iOS
+iosApp/iosApp.xcodeproj/xcuserdata/
+iosApp/Pods/
+DerivedData/
+*.xcuserstate
+
+# Secrets
+google-services.json
+*.keystore
+*.jks

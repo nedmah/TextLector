@@ -2,7 +2,7 @@
 
 A free, offline text-to-speech reader for Android and iOS, built with Kotlin Multiplatform and Compose Multiplatform.
 
-> Positioned as an open-source alternative to Speechify — no subscriptions, no internet required, no data leaves your device.
+> Open-source alternative to Speechify — no subscriptions, no internet required, no data leaves your device.
  
 ---
 
@@ -13,12 +13,11 @@ A free, offline text-to-speech reader for Android and iOS, built with Kotlin Mul
   <img src="screenshots/reader.png" width="200"/>
   <img src="screenshots/settings.png" width="200"/>
 </p>
-
 ---
 
 ## Features
 
-- **Import** — PDF, TXT, or paste text manually
+- **Import** — PDF, TXT, URL, or paste text manually
 - **Offline TTS** — native system voices on both platforms; high-quality neural Piper voices via sherpa-onnx (Android, iOS)
 - **Paragraph highlighting** — current paragraph is highlighted in sync with playback
 - **Reading progress** — app remembers where you stopped in every document
@@ -62,6 +61,8 @@ Building Piper from source requires cross-compiling eSpeak-NG and ONNX Runtime f
 | Database | SQLDelight 2.x |
 | Preferences | multiplatform-settings |
 | File I/O | okio |
+| HTTP | Ktor Client 3.x |
+| HTML parsing | Ksoup (Jsoup KMP port) |
 | Neural TTS | sherpa-onnx + Piper VITS models |
 | PDF (Android) | PdfBox-Android |
 | PDF (iOS) | PDFKit + Vision OCR fallback |
@@ -120,11 +121,13 @@ Open `iosApp/iosApp.xcodeproj` in Xcode and run on a simulator or device.
 
 ## Roadmap
 
-- [ ] URL import
+- [x] PDF, TXT, manual text import
+- [x] URL import
+- [x] Native TTS (Android + iOS)
+- [x] Neural TTS via Piper / sherpa-onnx (Android + iOS)
 - [ ] Camera / OCR import
 - [ ] JVM / Desktop support
 - [ ] Background playback (MediaSession / AVAudioSession)
-- [ ] iOS sherpa-onnx neural TTS (Phase 3)
 ---
 
 ## License

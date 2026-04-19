@@ -27,6 +27,8 @@ uuid = "0.8.4"
 pdfbox-android = "2.0.27.0"
 pdfbox-jvm = "2.0.27"
 kotlinx-serialization = "1.7.3"
+ktor = "3.4.0"
+ksoup = "0.2.6"
 
 [libraries]
 commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
@@ -75,9 +77,19 @@ uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfbox-android" }
 pdfbox-jvm = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox-jvm" }
 
+# network
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-ios = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 
+# file io
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+
+# html/xml parsing
+ksoup-core = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 

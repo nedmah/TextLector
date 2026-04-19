@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val PLAYER_LOGS = true
+private const val PLAYER_LOGS = false
 
 private fun playerLog(message: String) {
     if (PLAYER_LOGS) println("[PlayerVM] $message")
@@ -121,7 +121,7 @@ class PlayerViewModel(
         if (ttsQueue == null) {
             ttsEngine.piperEngine()?.let {
                 ttsQueue = TtsQueue(it)
-                playerLog("play: TtsQueue создан (lazy init)")
+                playerLog("play: TtsQueue created (lazy init)")
             }  // if observePreferences didn't create it
         }
 
@@ -137,7 +137,7 @@ class PlayerViewModel(
 
             if (queue != null) {
                 val cached = queue.getCachedAudio(currentIndex)
-                playerLog("queue=${if (cached != null) "CACHE HIT" else "CACHE MISS"} для index=$currentIndex")
+                playerLog("queue=${if (cached != null) "CACHE HIT" else "CACHE MISS"} for index=$currentIndex")
 
                 if (cached == null) {
                     _state.update { it.copy(isBuffering = true) }
@@ -150,7 +150,7 @@ class PlayerViewModel(
                 }  // getAudio: instant if prefetch already worked, otherwise generate
 
                 if (utteranceId != currentUtteranceId) {
-                    playerLog("utteranceId устарел после getAudio ($utteranceId != $currentUtteranceId), выхожу")
+                    playerLog("utteranceId outdated after getAudio ($utteranceId != $currentUtteranceId), exiting")
                     return@launch
                 }
 
@@ -158,24 +158,24 @@ class PlayerViewModel(
                 // one more check because
                 // CACHE HIT + fast double-next can skip first check
                 if (utteranceId != currentUtteranceId) {
-                    playerLog("utteranceId устарел перед playAudio ($utteranceId != $currentUtteranceId), выхожу")
+                    playerLog("utteranceId outdated before playAudio ($utteranceId != $currentUtteranceId), exiting")
                     return@launch
                 }
 
-                playerLog("playAudio($currentIndex) начинаю, размер=${audio.size}b")
+                playerLog("playAudio($currentIndex) began, size=${audio.size}b")
                 ttsEngine.piperEngine()?.playAudio(audio)
-                playerLog("playAudio($currentIndex) завершён")
+                playerLog("playAudio($currentIndex) finished")
 
             } else {
                 playerLog("Native TTS path: speak($currentIndex)")
                 ttsEngine.speak(paragraph.text, speed)
-                playerLog("speak($currentIndex) завершён")
+                playerLog("speak($currentIndex) finished")
             }
             if (utteranceId == currentUtteranceId) {
-                playerLog("navigateParagraph(+1) от index=$currentIndex")
+                playerLog("navigateParagraph(+1) from index=$currentIndex")
                 navigateParagraph(+1)
             }else {
-                playerLog("utteranceId устарел после playback ($utteranceId != $currentUtteranceId), навигацию пропускаю")
+                playerLog("utteranceId outdated after playback ($utteranceId != $currentUtteranceId), skipping navigation")
             }
         }
     }

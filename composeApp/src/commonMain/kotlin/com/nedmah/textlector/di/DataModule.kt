@@ -1,11 +1,11 @@
 package com.nedmah.textlector.di
 
-import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.DocumentRepositoryImpl
 import com.nedmah.textlector.data.repository.ParagraphRepositoryImpl
 import com.nedmah.textlector.data.repository.PreferencesRepositoryImpl
+import com.nedmah.textlector.data.source.UrlContentFetcher
 import com.nedmah.textlector.db.LectorDatabase
 import com.nedmah.textlector.domain.repository.DocumentRepository
 import com.nedmah.textlector.domain.repository.ParagraphRepository
@@ -49,6 +49,8 @@ val dataModule = module {
     single<ParagraphRepository> { ParagraphRepositoryImpl(get()) }
     single<PreferencesRepository> { PreferencesRepositoryImpl(get()) }
 
+    factory { UrlContentFetcher() }
+
     // UseCases
     factory { GetDocumentsUseCase(get()) }
     factory { GetDocumentUseCase(get()) }
@@ -77,7 +79,7 @@ val dataModule = module {
             get(),
             get(),
             get<TtsEngine>()
-        )  // koinInject() vor this one (when ios tts engine)
+        )
     }
     viewModel {
         LibraryViewModel(
@@ -90,6 +92,6 @@ val dataModule = module {
         )
     }
     factory { ReaderViewModel(get(), get(), get(), get()) }
-    factory { ImportViewModel(get(), get(), get()) }
+    factory { ImportViewModel(get(), get(), get(), get()) }
     factory { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
 }

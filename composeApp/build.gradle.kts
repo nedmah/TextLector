@@ -71,7 +71,11 @@ kotlin {
             implementation(libs.uuid)
             // pdf
             implementation(libs.pdfbox.android)
+
             implementation(libs.kotlinx.serialization.json)
+
+            implementation(libs.ksoup.core)
+            implementation(libs.ksoup.network)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)

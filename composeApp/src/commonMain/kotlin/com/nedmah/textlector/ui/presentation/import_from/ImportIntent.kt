@@ -12,4 +12,9 @@ interface ImportIntent {
 
     data object DismissImport :
         ImportIntent // bottom sheet
+
+    data object OpenUrlSheet : ImportIntent
+    data object DismissUrlSheet : ImportIntent
+    data class EnterUrl(val url: String) : ImportIntent
+    data object ImportFromUrl : ImportIntent
 }
