@@ -77,9 +77,7 @@ fun SwipeableDocItem(
     ) {
         RecentDocItem(
             document = document,
-            onClick = onClick,
-            onDelete = onDelete,
-            onFavorite = onFavorite
+            onClick = onClick
         )
     }
 
@@ -134,9 +132,7 @@ private fun FavoriteBackground(isFavorite: Boolean) {
 @Composable
 private fun RecentDocItem(
     document: Document,
-    onClick: () -> Unit,
-    onDelete: () -> Unit,
-    onFavorite: () -> Unit
+    onClick: () -> Unit
 ) {
     val progress = if (document.totalParagraphs > 0) {
         document.lastParagraphIndex.toFloat() / document.totalParagraphs

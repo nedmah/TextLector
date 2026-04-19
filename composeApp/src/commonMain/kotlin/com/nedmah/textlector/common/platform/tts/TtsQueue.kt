@@ -16,7 +16,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-private const val TTS_QUEUE_LOGS = true
+private const val TTS_QUEUE_LOGS = false
 
 private fun ttsLog(message: String) {
     if (TTS_QUEUE_LOGS) println("[TtsQueue ${Clock.System.now().toEpochMilliseconds() % 100_000}ms] $message")
@@ -58,32 +58,32 @@ class TtsQueue(
             val until = minOf(from + bufferSize, paragraphs.size)
 
             if (from >= paragraphs.size) {
-                ttsLog("prefetchAhead($currentIndex): конец документа")
+                ttsLog("prefetchAhead($currentIndex): end of the doc")
                 return@launch
             }
-            ttsLog("prefetchAhead($currentIndex): буферизую параграфы [$from, ${until - 1}]")
+            ttsLog("prefetchAhead($currentIndex): buffering paragraphs [$from, ${until - 1}]")
 
             for (i in from until until) {
 
                 val isStale = mutex.withLock { generationId != capturedGeneration }
                 if (isStale) {
-                    ttsLog("  параграф[$i]: устарел (clear вызван), прерываю")
+                    ttsLog("  paragraph[$i]: is old (clear called), cancelling")
                     break
                 }
 
                 val (deferred, shouldGenerate) = acquireSlot(i)
                 if (!shouldGenerate) {
-                    ttsLog("  параграф[$i]: уже в буфере (HIT), пропускаю")
+                    ttsLog("  paragraph[$i]: already in buffer (HIT), skip")
                     continue
                 }  // already in buffer or generating
 
-                ttsLog("  параграф[$i]: начинаю генерацию...")
+                ttsLog("  paragraph[$i]: begin generating...")
                 val startMs = Clock.System.now().toEpochMilliseconds()
 
                 try {
                     val audio = engine.generate(paragraphs[i].text, speed)
                     if (audio.isEmpty()) {
-                        ttsLog("  параграф[$i]: generate вернул пустой массив (stop был вызван), прерываю")
+                        ttsLog("  paragraph[$i]: generate returned empty array (stop was called), cancelling")
                         deferred.cancel()
                         break
                     }
@@ -92,19 +92,19 @@ class TtsQueue(
                     val stillValid = mutex.withLock { generationId == capturedGeneration }
                     if (stillValid) {
                         deferred.complete(audio)
-                        ttsLog("  параграф[$i]: готов за ${elapsed}ms, размер=${audio.size}b")
+                        ttsLog("  paragraph[$i]: ready in ${elapsed}ms, size=${audio.size}b")
                     } else {
                         deferred.cancel()
-                        ttsLog("  параграф[$i]: готов за ${elapsed}ms, но устарел — выбрасываю")
+                        ttsLog("  paragraph[$i]: ready in ${elapsed}ms, but is old - calcelling")
                         break
                     }
                 } catch (e: CancellationException) {
                     deferred.cancel()
-                    ttsLog("  параграф[$i]: отменён (CancellationException)")
+                    ttsLog("  paragraph[$i]: cancelled (CancellationException)")
                     break  // stop fully on cancel
                 } catch (e: Exception) {
                     deferred.completeExceptionally(e) // continue on next paragraph
-                    ttsLog("  параграф[$i]: ОШИБКА — ${e.message}")
+                    ttsLog("  paragraph[$i]: error — ${e.message}")
                 }
             }
         }
@@ -120,38 +120,38 @@ class TtsQueue(
         val (deferred, shouldGenerate) = acquireSlot(index)
 
         if (shouldGenerate) {
-            ttsLog("getAudio($index): CACHE MISS — генерирую синхронно")
+            ttsLog("getAudio($index): CACHE MISS — generating sync")
             val capturedGeneration = mutex.withLock { generationId }
             val startMs = Clock.System.now().toEpochMilliseconds()
             try {
                 val audio = engine.generate(text, speed)
                 if (audio.isEmpty()) {
                     deferred.cancel()
-                    ttsLog("getAudio($index): generate вернул пустой массив (stop был вызван)")
+                    ttsLog("getAudio($index): generate returned empty array (stop was called)")
                     throw CancellationException("generate() returned empty audio")
                 }
                 val elapsed = Clock.System.now().toEpochMilliseconds() - startMs
                 val isStale = mutex.withLock { generationId != capturedGeneration }  // if while generating clear was called
                 if (isStale) {
                     deferred.cancel()
-                    ttsLog("getAudio($index): готов за ${elapsed}ms, но устарел (clear) — выбрасываю")
+                    ttsLog("getAudio($index): ready in ${elapsed}ms, but is old - calcelling")
                     throw CancellationException("Generation invalidated by clear()")
                 }
                 deferred.complete(audio)
-                ttsLog("getAudio($index): готов за ${elapsed}ms, размер=${audio.size}b")
+                ttsLog("getAudio($index): ready in ${elapsed}ms, size=${audio.size}b")
             } catch (e: Exception) {
                 deferred.completeExceptionally(e)
                 throw e
             }
         } else {
             if (deferred.isCompleted) {
-                ttsLog("getAudio($index): CACHE HIT — возврат мгновенный")
+                ttsLog("getAudio($index): CACHE HIT - return instant")
             } else {
-                ttsLog("getAudio($index): prefetch in-progress — жду...")
+                ttsLog("getAudio($index): prefetch in-progress - waiting...")
                 val startMs = Clock.System.now().toEpochMilliseconds()
                 deferred.await()
                 val waited = Clock.System.now().toEpochMilliseconds() - startMs
-                ttsLog("getAudio($index): дождался за ${waited}ms")
+                ttsLog("getAudio($index): waited for ${waited}ms")
                 return deferred.await()
             }
         }

@@ -25,8 +25,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,6 +45,7 @@ import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportSuccessSheet
 import com.nedmah.textlector.ui.presentation.import_from.components.ManualTextInput
+import com.nedmah.textlector.ui.presentation.import_from.components.UrlImportSheet
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
@@ -65,6 +65,10 @@ fun ImportScreenRoot(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    val urlSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val fileLauncher = rememberFileLauncher { uri, mimeType ->
         if (uri != null) {
@@ -76,11 +80,19 @@ fun ImportScreenRoot(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ImportEffect.NavigateToReader -> onNavigateToReader(effect.documentId)
-                is ImportEffect.ShowError -> { /* Snackbar */
-                }
+                is ImportEffect.ShowError -> { /* Snackbar */ }
             }
         }
     }
+
+    LaunchedEffect(state.showUrlSheet) {
+        if (!state.showUrlSheet) {
+            urlSheetState.hide()
+            keyboardController?.hide()
+            focusManager.clearFocus()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         ImportScreen(
             state,
@@ -89,6 +101,7 @@ fun ImportScreenRoot(
         )
 
         val document = state.processedDocument
+
         if (document != null) {
             ModalBottomSheet(
                 onDismissRequest = { viewModel.onIntent(ImportIntent.DismissImport) },
@@ -110,6 +123,23 @@ fun ImportScreenRoot(
                 )
             }
         }
+
+        if (state.showUrlSheet) {
+            ModalBottomSheet(
+                sheetState = urlSheetState,
+                onDismissRequest = { viewModel.onIntent(ImportIntent.DismissUrlSheet) },
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                UrlImportSheet(
+                    urlText = state.urlText,
+                    isLoading = state.isLoading,
+                    onUrlChange = { viewModel.onIntent(ImportIntent.EnterUrl(it)) },
+                    onImport = { viewModel.onIntent(ImportIntent.ImportFromUrl) },
+                    onDismiss = { viewModel.onIntent(ImportIntent.DismissUrlSheet) }
+                )
+            }
+        }
+
     }
 }
 
@@ -251,7 +281,7 @@ private fun ImportScreen(
             ImportRowItem(
                 title = "Import from URL",
                 iconRes = Res.drawable.ic_url,
-                onClick = { /* v2 */ }
+                onClick = { onIntent(ImportIntent.OpenUrlSheet) }
             )
             Spacer(modifier = Modifier.height(8.dp))
             ImportRowItem(

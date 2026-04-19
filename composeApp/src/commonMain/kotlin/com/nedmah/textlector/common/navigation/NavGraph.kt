@@ -1,5 +1,9 @@
 package com.nedmah.textlector.common.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +20,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nedmah.textlector.ui.presentation.components.BottomNavBar
 import com.nedmah.textlector.ui.presentation.components.MiniPlayer
-import com.nedmah.textlector.ui.presentation.import_from.ImportScreenRoot
-import com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot
 import com.nedmah.textlector.ui.presentation.player.PlayerIntent
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
-import com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot
-import com.nedmah.textlector.ui.presentation.settings.SettingsScreenRoot
 import org.koin.compose.koinInject
 
 @Composable
@@ -73,7 +73,11 @@ fun TextLectorNavGraph() {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             NavHost(
                 navController = navController,
-                startDestination = LibraryRoute
+                startDestination = LibraryRoute,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None }
             ) {
                 composable<LibraryRoute> {
                     com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot(
@@ -94,7 +98,22 @@ fun TextLectorNavGraph() {
                     )
                 }
 
-                composable<ReaderRoute> { backStackEntry ->
+                composable<ReaderRoute>(
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(320)
+                        )
+                    },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(320)
+                        )
+                    }
+                ) { backStackEntry ->
                     val route = backStackEntry.toRoute<ReaderRoute>()
                     com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot(
                         documentId = route.documentId,

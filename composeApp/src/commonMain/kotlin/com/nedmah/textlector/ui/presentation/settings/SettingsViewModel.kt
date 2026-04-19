@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.domain.model.ModelState
-import com.nedmah.textlector.domain.model.UserPreferences
-import com.nedmah.textlector.domain.model.VoiceGender
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceRegistry
 import com.nedmah.textlector.domain.repository.VoiceModelRepository

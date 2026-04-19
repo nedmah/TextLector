@@ -1,8 +1,9 @@
 package com.nedmah.textlector
 
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.nedmah.textlector.common.navigation.TextLectorNavGraph
 import com.nedmah.textlector.ui.presentation.settings.SettingsViewModel
