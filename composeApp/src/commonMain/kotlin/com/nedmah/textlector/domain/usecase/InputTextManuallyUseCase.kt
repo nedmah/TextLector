@@ -5,6 +5,8 @@ import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.ProcessedDocument
 import com.nedmah.textlector.domain.model.SourceType
+import com.nedmah.textlector.domain.repository.DocumentRepository
+import com.nedmah.textlector.domain.repository.ParagraphRepository
 import com.nedmah.textlector.domain.util.TextSegmenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO

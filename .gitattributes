@@ -1,0 +1,10 @@
+# Tell GitHub to treat these as non-primary languages
+*.swift linguist-detectable=false
+*.m linguist-detectable=false
+*.h linguist-detectable=false
+*.c linguist-detectable=false
+*.cpp linguist-detectable=false
+
+# Explicitly mark Kotlin as primary
+*.kt linguist-language=Kotlin
+*.kts linguist-language=Kotlin

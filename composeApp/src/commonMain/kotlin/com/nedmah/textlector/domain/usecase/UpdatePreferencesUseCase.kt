@@ -1,6 +1,7 @@
 package com.nedmah.textlector.domain.usecase
 
 import com.nedmah.textlector.domain.model.VoiceGender
+import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.repository.PreferencesRepository
 
 class UpdatePreferencesUseCase(
