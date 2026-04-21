@@ -3,6 +3,7 @@ package com.nedmah.textlector.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.nedmah.textlector.data.db.toDbString
 import com.nedmah.textlector.data.db.toDomain
 import com.nedmah.textlector.db.DocumentQueries
@@ -51,8 +52,8 @@ class DocumentRepositoryImpl(
     override fun getDocumentById(id: String): Flow<Document?> =
         queries.selectById(id)
             .asFlow()
-            .mapToOne(Dispatchers.IO)
-            .map { it.toDomain() }
+            .mapToOneOrNull(Dispatchers.IO)
+            .map { it?.toDomain() }
 
     override suspend fun saveDocument(document: Document): Result<Unit> =
         withContext(Dispatchers.IO) {

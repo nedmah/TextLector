@@ -2,13 +2,20 @@ package com.nedmah.textlector.common.platform.file
 
 import com.nedmah.textlector.di.IosEngineHolder
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSData
 import platform.Foundation.NSFileCoordinator
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
+import platform.Foundation.create
+import platform.Foundation.dataWithBytes
+import platform.Foundation.dataWithContentsOfURL
+import platform.Foundation.getBytes
 import platform.Foundation.stringWithContentsOfURL
 import platform.PDFKit.PDFDocument
 
@@ -53,7 +60,7 @@ actual class FileReader {
                 val sb = StringBuilder()
 
                 for (i in 0 until total) {
-                    val pageText = extractor.extractPage(uri,i)
+                    val pageText = extractor.extractPage(uri, i)
 
                     val finalText = if (looksGarbled(pageText))
                         extractor.ocrPage(uri, i)
@@ -68,6 +75,24 @@ actual class FileReader {
                 val result = sb.toString()
                 if (result.isBlank()) error("Cannot read PDF: $uri")
                 result
+            }
+        }
+
+    actual suspend fun readBytes(uri: String): Result<ByteArray> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val nsUrl = NSURL.fileURLWithPath(uri)
+                val data = NSData.dataWithContentsOfURL(nsUrl)
+                    ?: error("Cannot read file: $uri")
+                data.toByteArray()
+            }
+        }
+
+    @OptIn(ExperimentalForeignApi::class)
+    private fun NSData.toByteArray(): ByteArray =
+        ByteArray(length.toInt()).also { bytes ->
+            bytes.usePinned { pinned ->
+                platform.posix.memcpy(pinned.addressOf(0), this.bytes, this.length)
             }
         }
 

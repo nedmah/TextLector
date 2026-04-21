@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,6 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +54,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_camera
+import textlector.composeapp.generated.resources.ic_epub
+import textlector.composeapp.generated.resources.ic_fb2
 import textlector.composeapp.generated.resources.ic_pdf_doc
 import textlector.composeapp.generated.resources.ic_text_doc
 import textlector.composeapp.generated.resources.ic_url
@@ -152,6 +158,13 @@ private fun ImportScreen(
 
     val focusManager = LocalFocusManager.current
 
+    val fileTypes = listOf(
+        Triple("PDF Document", "STANDARD OCR", Res.drawable.ic_pdf_doc) to { onPickFile("application/pdf") },
+        Triple("Plain Text", "TXT / MD FILES", Res.drawable.ic_text_doc) to { onPickFile("text/plain") },
+        Triple("EPUB Book", "EPUB FILES", Res.drawable.ic_epub) to { },
+        Triple("FictionBook", "FB2 FILES", Res.drawable.ic_fb2) to { },
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -200,34 +213,23 @@ private fun ImportScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
+            LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(end = 20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
             ) {
-                FileTypeCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    title = "PDF Document",
-                    subtitle = "STANDARD OCR",
-                    iconRes = Res.drawable.ic_pdf_doc,
-                    onClick = {
-                        onPickFile("application/pdf")
-                    }
-                )
-                FileTypeCard(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    title = "Plain Text",
-                    subtitle = "TXT / MD FILES",
-                    iconRes = Res.drawable.ic_text_doc,
-                    onClick = {
-                        onPickFile("text/plain")
-                    }
-                )
+                items(fileTypes) { (info, onClick) ->
+                    FileTypeCard(
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(160.dp),
+                        title = info.first,
+                        subtitle = info.second,
+                        iconRes = info.third,
+                        onClick = onClick
+                    )
+                }
             }
 
             when (val progress = state.importProgress) {
@@ -277,7 +279,7 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // URL и Camera — stubs
+            // Camera - stub
             ImportRowItem(
                 title = "Import from URL",
                 iconRes = Res.drawable.ic_url,
@@ -345,7 +347,7 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "PROCESSED VIA TEXTLECTOR ENGINE 4.2",
+                text = "PROJECT WAS MADE BY @NEDMAH",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),

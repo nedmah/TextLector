@@ -24,6 +24,8 @@ fun SourceType.toDbString(): String = when (this) {
     is SourceType.Url -> "URL:${this.url}"
     is SourceType.Docx -> "DOCX"
     is SourceType.Camera -> "CAMERA"
+    SourceType.Epub -> "EPUB"
+    SourceType.Fb2 -> "FB2"
 }
 
 fun String.toSourceType(): SourceType = when {
@@ -33,5 +35,7 @@ fun String.toSourceType(): SourceType = when {
     this.startsWith("URL:") -> SourceType.Url(this.removePrefix("URL:"))
     this == "DOCX" -> SourceType.Docx
     this == "CAMERA" -> SourceType.Camera
+    this == "EPUB" -> SourceType.Epub
+    this == "FB2" -> SourceType.Fb2
     else -> throw IllegalArgumentException("Unknown source type: $this")
 }

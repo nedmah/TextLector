@@ -30,12 +30,12 @@ fun TopBar(onSearchClick: () -> Unit) {
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
-        IconButton(onClick = onSearchClick) {
-            Icon(
-                painter = painterResource(Res.drawable.ic_search),
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
+//        IconButton(onClick = onSearchClick) {
+//            Icon(
+//                painter = painterResource(Res.drawable.ic_search),
+//                contentDescription = "Search",
+//                tint = MaterialTheme.colorScheme.onBackground
+//            )
+//        }
     }
 }
