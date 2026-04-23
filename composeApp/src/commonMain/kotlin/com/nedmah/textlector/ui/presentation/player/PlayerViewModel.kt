@@ -43,6 +43,7 @@ class PlayerViewModel(
 
     private var saveProgressJob: Job? = null
     private var playbackJob: Job? = null
+    private var loadDocumentJob: Job? = null
 
     private var currentUtteranceId: Int = 0
 
@@ -86,7 +87,10 @@ class PlayerViewModel(
     private fun loadDocument(documentId: String) {
         if (_state.value.document?.id == documentId) return
 
-        viewModelScope.launch {
+        loadDocumentJob?.cancel()
+        pause()
+
+        loadDocumentJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             updateLastOpenedUseCase(documentId)
 
