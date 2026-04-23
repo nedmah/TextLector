@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nedmah.textlector.domain.util.formatMinutes
 import com.nedmah.textlector.ui.presentation.player.PlayerIntent
 import com.nedmah.textlector.ui.presentation.player.PlayerState
 import com.nedmah.textlector.ui.presentation.player.PlayerViewModel
@@ -78,14 +79,15 @@ fun ReaderScreen(
             PlayerControls(
                 isPlaying = playerState.isPlaying,
                 playbackSpeed = playerState.playbackSpeed,
+                progress = playerState.progress,
+                isEnabled = playerState.isLoaded && !playerState.isLoading,
+                isLoading = playerState.isLoading || playerState.isBuffering,
+                elapsed = formatMinutes(playerState.elapsedMinutes),
+                remaining = "-${formatMinutes(playerState.remainingMinutes)}",
                 onPlay = { onPlayerIntent(PlayerIntent.Play) },
                 onPause = { onPlayerIntent(PlayerIntent.Pause) },
                 onNext = { onPlayerIntent(PlayerIntent.NextParagraph) },
                 onPrevious = { onPlayerIntent(PlayerIntent.PreviousParagraph) },
-                onSpeedChange = { /* позже — bottom sheet со скоростями */ },
-                progress = playerState.progress,
-                isEnabled = playerState.isLoaded && !playerState.isLoading,
-                isLoading = playerState.isLoading || playerState.isBuffering,
                 onSeek = { fraction ->
                     val index = (fraction * playerState.paragraphs.size).toInt()
                         .coerceIn(0, playerState.paragraphs.lastIndex)

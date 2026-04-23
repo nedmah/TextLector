@@ -19,6 +19,18 @@ data class PlayerState(
         get() = if (paragraphs.isEmpty()) 0f
         else currentParagraphIndex.toFloat() / (paragraphs.size - 1)
 
+    val elapsedMinutes: Float
+        get() {
+            val total = (document?.estimatedReadingMinutes ?: 0) / playbackSpeed
+            return total * progress
+        }
+
+    val remainingMinutes: Float
+        get() {
+            val total = (document?.estimatedReadingMinutes ?: 0) / playbackSpeed
+            return (total - elapsedMinutes).coerceAtLeast(0f)
+        }
+
     val isLoaded: Boolean
         get() = document != null && paragraphs.isNotEmpty()
 }
