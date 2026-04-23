@@ -43,6 +43,7 @@ class PlayerViewModel(
 
     private var saveProgressJob: Job? = null
     private var playbackJob: Job? = null
+    private var loadDocumentJob: Job? = null
 
     private var currentUtteranceId: Int = 0
 
@@ -67,14 +68,17 @@ class PlayerViewModel(
         viewModelScope.launch {
             getPreferencesUseCase().collect { prefs ->
                 _state.update { it.copy(playbackSpeed = prefs.speechSpeed) }
+            }
+        }
 
-                val piper = ttsEngine.piperEngine()
-                when {
-                    piper != null && ttsQueue == null -> ttsQueue = TtsQueue(piper)
-                    piper == null && ttsQueue != null -> {
-                        ttsQueue?.clear()
-                        ttsQueue = null
-                    }
+        viewModelScope.launch {
+            ttsEngine.engineChanged.collect {
+                ttsQueue?.clear()
+                ttsQueue = ttsEngine.piperEngine()?.let { TtsQueue(it) }
+
+                if (_state.value.isPlaying) {
+                    pause()
+                    play()
                 }
             }
         }
@@ -83,7 +87,10 @@ class PlayerViewModel(
     private fun loadDocument(documentId: String) {
         if (_state.value.document?.id == documentId) return
 
-        viewModelScope.launch {
+        loadDocumentJob?.cancel()
+        pause()
+
+        loadDocumentJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             updateLastOpenedUseCase(documentId)
 

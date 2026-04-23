@@ -80,8 +80,11 @@ kotlin {
 
             implementation(libs.kotlinx.serialization.json)
 
+            // xml parsing
             implementation(libs.ksoup.core)
             implementation(libs.ksoup.network)
+
+            implementation(libs.synth.kmp.zip)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)
@@ -114,8 +117,8 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 11
-        versionName = "1.1"
+        versionCode = 12
+        versionName = "1.2"
     }
     packaging {
         resources {

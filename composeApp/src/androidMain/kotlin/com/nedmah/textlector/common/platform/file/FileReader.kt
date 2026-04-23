@@ -45,4 +45,16 @@ actual class FileReader(private val context: Context) {
                 sb.toString()
             }
         }
+
+    actual suspend fun readBytes(uri: String): Result<ByteArray> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver
+                    .openInputStream(uri.toUri())
+                    ?.use { it.readBytes() }
+                    ?: error("Cannot open stream for uri: $uri")
+            }
+        }
+
+
 }

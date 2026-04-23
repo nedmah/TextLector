@@ -52,20 +52,20 @@ Building Piper from source requires cross-compiling eSpeak-NG and ONNX Runtime f
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| UI | Compose Multiplatform |
-| Architecture | MVI + ViewModel (commonMain) |
-| DI | Koin Multiplatform |
-| Navigation | Navigation Compose CMP (Nav3, typesafe routes) |
-| Database | SQLDelight 2.x |
-| Preferences | multiplatform-settings |
-| File I/O | okio |
-| HTTP | Ktor Client 3.x |
-| HTML parsing | Ksoup (Jsoup KMP port) |
-| Neural TTS | sherpa-onnx + Piper VITS models |
-| PDF (Android) | PdfBox-Android |
-| PDF (iOS) | PDFKit + Vision OCR fallback |
+| Layer         | Technology                                       |
+|---------------|--------------------------------------------------|
+| UI            | Compose Multiplatform                            |
+| Architecture  | MVI + ViewModel (commonMain)                     |
+| DI            | Koin Multiplatform                               |
+| Navigation    | Navigation Compose CMP (Nav2.8, typesafe routes) |
+| Database      | SQLDelight 2.x                                   |
+| Preferences   | multiplatform-settings                           |
+| File I/O      | okio                                             |
+| HTTP          | Ktor Client 3.x                                  |
+| HTML parsing  | Ksoup (Jsoup KMP port)                           |
+| Neural TTS    | sherpa-onnx + Piper VITS models                  |
+| PDF (Android) | PdfBox-Android                                   |
+| PDF (iOS)     | PDFKit + Vision OCR fallback                     |
  
 ---
 
@@ -121,7 +121,7 @@ Open `iosApp/iosApp.xcodeproj` in Xcode and run on a simulator or device.
 
 ## Roadmap
 
-- [x] PDF, TXT, manual text import
+- [x] PDF, TXT, EPUB, FB2, manual text import
 - [x] URL import
 - [x] Native TTS (Android + iOS)
 - [x] Neural TTS via Piper / sherpa-onnx (Android + iOS)

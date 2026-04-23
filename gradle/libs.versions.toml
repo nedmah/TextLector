@@ -13,6 +13,7 @@ commonsCompress = "1.27.1"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
 junit = "4.13.2"
+kmpZipVersion = "0.9.2"
 kotlin = "2.3.0"
 kotlinx-datetime = "0.6.1"
 kotlinx-coroutines = "1.10.2"
@@ -72,6 +73,9 @@ multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-sett
 
 # uuid
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+
+# zip unpacking
+synth-kmp-zip = { module = "no.synth:kmp-zip", version.ref = "kmpZipVersion" }
 
 # pdf
 pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfbox-android" }

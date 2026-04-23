@@ -29,6 +29,10 @@ sealed class SourceType{
     data object Manual : SourceType()
     data object Txt : SourceType()
     data object Pdf : SourceType()
+
+    data object Epub : SourceType()
+
+    data object Fb2 : SourceType()
     data class Url(val url : String) : SourceType()
     data object Docx : SourceType() // v2
     data object Camera : SourceType() // v2

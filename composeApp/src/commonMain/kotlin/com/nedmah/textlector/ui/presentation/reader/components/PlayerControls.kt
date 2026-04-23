@@ -42,11 +42,12 @@ fun PlayerControls(
     progress: Float,
     isEnabled: Boolean,
     isLoading : Boolean,
+    elapsed: String,
+    remaining: String,
     onPlay: () -> Unit,
     onPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onSpeedChange: () -> Unit,
     onSeek: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,6 +68,24 @@ fun PlayerControls(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = elapsed,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = remaining,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -77,7 +96,6 @@ fun PlayerControls(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { onSpeedChange() }
                         .padding(8.dp)
                 )
 
