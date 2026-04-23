@@ -110,6 +110,8 @@ class ImportViewModel(
         val sourceType = when (mimeType) {
             "application/pdf" -> SourceType.Pdf
             "text/plain" -> SourceType.Txt
+            "application/epub+zip" -> SourceType.Epub
+            "application/x-fictionbook+xml", "text/xml", "application/xml" -> SourceType.Fb2
             else -> {
                 viewModelScope.launch {
                     _effect.send(ImportEffect.ShowError("Unsupported file type"))

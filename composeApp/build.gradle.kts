@@ -80,8 +80,11 @@ kotlin {
 
             implementation(libs.kotlinx.serialization.json)
 
+            // xml parsing
             implementation(libs.ksoup.core)
             implementation(libs.ksoup.network)
+
+            implementation(libs.synth.kmp.zip)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)

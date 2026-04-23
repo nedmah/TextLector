@@ -7,6 +7,8 @@ import com.nedmah.textlector.domain.model.ImportProgress
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.ProcessedDocument
 import com.nedmah.textlector.domain.model.SourceType
+import com.nedmah.textlector.domain.util.EpubParser
+import com.nedmah.textlector.domain.util.Fb2Parser
 import com.nedmah.textlector.domain.util.TextSegmenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,15 +22,44 @@ class ImportDocumentUseCase(
 ) {
 
     @OptIn(ExperimentalTime::class)
-    suspend operator fun invoke(uri: String, title: String, type: SourceType): Flow<ImportProgress> = callbackFlow {
+    suspend operator fun invoke(
+        uri: String,
+        title: String,
+        type: SourceType
+    ): Flow<ImportProgress> = callbackFlow {
         try {
-            val text = when (type) {
+            val text: String
+            val resolvedTitle: String
+
+            when (type) {
                 is SourceType.Pdf -> {
-                    fileReader.readPdf(uri) { current, total ->
+                    resolvedTitle = title
+                    text = fileReader.readPdf(uri) { current, total ->
                         trySend(ImportProgress.Processing(current, total))
                     }.getOrThrow()
                 }
-                is SourceType.Txt -> fileReader.readText(uri).getOrThrow()
+
+                is SourceType.Txt -> {
+                    text = fileReader.readText(uri).getOrThrow()
+                    resolvedTitle = title
+                }
+
+                is SourceType.Fb2 -> {
+                    val bytes = fileReader.readBytes(uri).getOrThrow()
+                    trySend(ImportProgress.Segmenting)
+                    val result = Fb2Parser.parse(bytes)
+                    resolvedTitle = result.title
+                    text = result.text
+                }
+
+                is SourceType.Epub -> {
+                    val bytes = fileReader.readBytes(uri).getOrThrow()
+                    trySend(ImportProgress.Segmenting)
+                    val result = EpubParser.parse(bytes)
+                    resolvedTitle = result.title
+                    text = result.text
+                }
+
                 else -> error("Unsupported type: $type")
             }
 
@@ -37,7 +68,7 @@ class ImportDocumentUseCase(
 
             val document = Document(
                 id = documentId,
-                title = title,
+                title = resolvedTitle,
                 sourceType = type,
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 lastOpenedAt = Clock.System.now().toEpochMilliseconds(),

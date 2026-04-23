@@ -161,8 +161,8 @@ private fun ImportScreen(
     val fileTypes = listOf(
         Triple("PDF Document", "STANDARD OCR", Res.drawable.ic_pdf_doc) to { onPickFile("application/pdf") },
         Triple("Plain Text", "TXT / MD FILES", Res.drawable.ic_text_doc) to { onPickFile("text/plain") },
-        Triple("EPUB Book", "EPUB FILES", Res.drawable.ic_epub) to { },
-        Triple("FictionBook", "FB2 FILES", Res.drawable.ic_fb2) to { },
+        Triple("EPUB Book", "EPUB FILES", Res.drawable.ic_epub) to { onPickFile("application/epub+zip") },
+        Triple("FictionBook", "FB2 FILES", Res.drawable.ic_fb2) to { onPickFile("application/x-fictionbook+xml") },
     )
 
     Column(
