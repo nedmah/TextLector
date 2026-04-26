@@ -8,6 +8,7 @@ import com.k2fsa.sherpa.onnx.OfflineTts
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.domain.model.ModelPath
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -35,7 +36,7 @@ class AndroidSherpaOnnxTtsEngine(
             tts?.release()
             tts = buildOfflineTts(path)
             currentVoiceId = model.id
-            Log.d("SherpaEngine", "Model loaded: ${model.id}")
+            CrashReporter.log("loadVoice: ${model.id}", tag = "SherpaEngine")
         }
     }
 
@@ -91,7 +92,13 @@ class AndroidSherpaOnnxTtsEngine(
             model = modelConfig,
             maxNumSentences = 1
         )
-        return OfflineTts(config = config)
+        CrashReporter.log("buildOfflineTts: onnx=${path.onnxPath}", tag = "SherpaEngine")
+        return try {
+            OfflineTts(config = config)
+        } catch (e: Exception) {
+            CrashReporter.recordException(e, "buildOfflineTts failed")
+            throw e
+        }
     }
 
     private fun playAudio(samples: FloatArray, sampleRate: Int) {

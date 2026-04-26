@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 
@@ -47,6 +49,9 @@ kotlin {
             implementation(libs.sqldelight.androidDriver)
             implementation(libs.sherpa.onnx.android)
             implementation(libs.commons.compress.android)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.13.0"))
+            implementation(libs.firebase.crashlytics)
+            implementation(libs.firebase.analytics)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

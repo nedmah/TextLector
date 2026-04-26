@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -144,15 +145,13 @@ class TtsQueue(
                 throw e
             }
         } else {
-            if (deferred.isCompleted) {
-                ttsLog("getAudio($index): CACHE HIT - return instant")
-            } else {
-                ttsLog("getAudio($index): prefetch in-progress - waiting...")
+            if (!deferred.isCompleted) {
                 val startMs = Clock.System.now().toEpochMilliseconds()
                 deferred.await()
                 val waited = Clock.System.now().toEpochMilliseconds() - startMs
                 ttsLog("getAudio($index): waited for ${waited}ms")
-                return deferred.await()
+            } else {
+                ttsLog("getAudio($index): CACHE HIT - return instant")
             }
         }
 
@@ -177,7 +176,18 @@ class TtsQueue(
         }
     }
 
-    fun shutdown() = clear()
+    suspend fun clearSync() {
+        mutex.withLock {
+            generationId++
+            pending.values.forEach { it.cancel() }
+            pending.clear()
+        }
+    }
+
+    fun shutdown() {
+        scope.coroutineContext[Job]?.cancel()
+        clear()
+    }
 
     /**
      * Returns existing deferred (shouldGenerate=false),

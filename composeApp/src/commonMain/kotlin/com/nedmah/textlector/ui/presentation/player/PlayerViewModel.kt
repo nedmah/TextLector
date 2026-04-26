@@ -2,6 +2,7 @@ package com.nedmah.textlector.ui.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsQueue
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
@@ -87,6 +88,9 @@ class PlayerViewModel(
     private fun loadDocument(documentId: String) {
         if (_state.value.document?.id == documentId) return
 
+        CrashReporter.setKey("document_id", documentId)
+        CrashReporter.log("loadDocument: $documentId", tag = "PlayerViewModel")
+
         loadDocumentJob?.cancel()
         pause()
 
@@ -125,6 +129,11 @@ class PlayerViewModel(
         val paragraphs = _state.value.paragraphs
         val speed = _state.value.playbackSpeed
 
+        CrashReporter.log(
+            "play: index=$currentIndex, utterance=$currentUtteranceId, engine=${if (ttsQueue != null) "Piper" else "Native"}",
+            tag = "PlayerViewModel"
+        )
+
         if (ttsQueue == null) {
             ttsEngine.piperEngine()?.let {
                 ttsQueue = TtsQueue(it)
@@ -152,6 +161,10 @@ class PlayerViewModel(
 
                 val audio = try {
                     queue.getAudio(currentIndex, paragraph.text, speed)
+                } catch (e: Exception) {
+                    CrashReporter.recordException(e, "getAudio failed at index=$currentIndex")
+                    _state.update { it.copy(isBuffering = false, isPlaying = false) }
+                    return@launch
                 } finally {
                     _state.update { it.copy(isBuffering = false) }
                 }  // getAudio: instant if prefetch already worked, otherwise generate
@@ -193,7 +206,7 @@ class PlayerViewModel(
         playbackJob?.cancel()
         ttsQueue?.clear()
         ttsEngine.stop()
-        _state.update { it.copy(isPlaying = false) }
+        _state.update { it.copy(isPlaying = false, isBuffering = false) }
     }
 
     private fun stop() {
@@ -204,7 +217,9 @@ class PlayerViewModel(
     private fun navigateParagraph(delta: Int) {
         val current = _state.value
         if (current.paragraphs.isEmpty()) return
+
         val newIndex = current.currentParagraphIndex + delta
+        val wasPlaying = _state.value.isPlaying
 
         if (newIndex > current.paragraphs.lastIndex) {
             pause()
@@ -223,7 +238,7 @@ class PlayerViewModel(
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (_state.value.isPlaying) {
+        if (wasPlaying) {
             play()
         }
     }
@@ -231,13 +246,16 @@ class PlayerViewModel(
     private fun seekTo(index: Int) {
         if (_state.value.paragraphs.isEmpty()) return
         val safeIndex = index.coerceIn(0, _state.value.paragraphs.lastIndex)
-        playerLog("seekTo($safeIndex): clear queue")
-        ttsQueue?.clear()
+
+        val wasPlaying = _state.value.isPlaying
+
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (_state.value.isPlaying) {
-            play()
+        playerLog("seekTo($safeIndex): clear queue")
+        viewModelScope.launch {
+            ttsQueue?.clearSync()
+            if (wasPlaying) play()
         }
     }
 

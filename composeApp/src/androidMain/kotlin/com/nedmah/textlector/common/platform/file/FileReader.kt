@@ -2,6 +2,7 @@ package com.nedmah.textlector.common.platform.file
 
 import android.content.Context
 import androidx.core.net.toUri
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -43,6 +44,8 @@ actual class FileReader(private val context: Context) {
 
                 document.close()
                 sb.toString()
+            }.onFailure {
+                CrashReporter.recordException(it, "readPdf failed: $uri")
             }
         }
 

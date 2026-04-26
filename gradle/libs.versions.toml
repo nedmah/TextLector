@@ -30,6 +30,9 @@ pdfbox-jvm = "2.0.27"
 kotlinx-serialization = "1.7.3"
 ktor = "3.4.0"
 ksoup = "0.2.6"
+google-services = "4.4.2"
+firebase-crashlytics-plugin = "3.0.3"
+firebase-bom = "33.13.0"
 
 [libraries]
 commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
@@ -95,6 +98,10 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 ksoup-core = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "ksoup" }
 
+# firebase
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
+
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
@@ -106,3 +113,5 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
