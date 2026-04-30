@@ -1,6 +1,6 @@
 package com.nedmah.textlector.common.platform.tts
 
-import com.nedmah.textlector.domain.model.VoiceModel
+import com.nedmah.textlector.domain.model.Paragraph
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -21,6 +21,7 @@ class IosTtsEngine : TtsEngine {
     private val synthesizer = AVSpeechSynthesizer()
     private var currentContinuation: CancellableContinuation<Unit>? = null
     private var activeUtterance: AVSpeechUtterance? = null
+    private var paragraphs: List<Paragraph> = emptyList()
 
     private val delegate = object : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         override fun speechSynthesizer(
@@ -42,7 +43,12 @@ class IosTtsEngine : TtsEngine {
         synthesizer.delegate = delegate
     }
 
-    override suspend fun speak(text: String, speed: Float) {
+    override fun setPlaylist(paragraphs: List<Paragraph>) {
+        this.paragraphs = paragraphs
+    }
+
+    override suspend fun speak(index: Int, speed: Float) {
+        val text = paragraphs.getOrNull(index)?.text ?: return
         suspendCancellableCoroutine { continuation ->
             val utterance = AVSpeechUtterance(string = text)
             utterance.rate = AVSpeechUtteranceDefaultSpeechRate * speed
@@ -60,16 +66,12 @@ class IosTtsEngine : TtsEngine {
         }
     }
 
-    override suspend fun loadVoice(model: VoiceModel) {
-        TODO("Not yet implemented")
-    }
-
     override fun stop() {
         currentContinuation = null
+        activeUtterance = null
         synthesizer.stopSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
     }
 
-    override fun shutdown() {
-        stop()
-    }
+    override fun shutdown() = stop()
+
 }

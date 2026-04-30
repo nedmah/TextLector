@@ -2,8 +2,8 @@ package com.nedmah.textlector.ui.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.common.platform.tts.TtsEngine
-import com.nedmah.textlector.common.platform.tts.TtsQueue
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
@@ -12,13 +12,16 @@ import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
-private const val PLAYER_LOGS = false
+private const val PLAYER_LOGS = true
 
 private fun playerLog(message: String) {
     if (PLAYER_LOGS) println("[PlayerVM] $message")
@@ -30,7 +33,8 @@ class PlayerViewModel(
     private val saveProgressUseCase: SaveProgressUseCase,
     private val updateLastOpenedUseCase: UpdateLastOpenedUseCase,
     private val getPreferencesUseCase: GetPreferencesUseCase,
-    private val ttsEngine: TtsEngine
+    private val ttsEngine: TtsEngine,
+    private val isBufferingFlow: Flow<Boolean>
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerState())
@@ -38,8 +42,6 @@ class PlayerViewModel(
 
     private val _effect = Channel<PlayerEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
-
-    private var ttsQueue: TtsQueue? = null
 
     private var saveProgressJob: Job? = null
     private var playbackJob: Job? = null
@@ -72,20 +74,31 @@ class PlayerViewModel(
         }
 
         viewModelScope.launch {
-            ttsEngine.engineChanged.collect {
-                ttsQueue?.clear()
-                ttsQueue = ttsEngine.piperEngine()?.let { TtsQueue(it) }
+            isBufferingFlow.collect { buffering ->
+                playerLog("[PlayerVM] isBuffering=$buffering")
+                _state.update { it.copy(isBuffering = buffering) }
+            }
+        }
 
-                if (_state.value.isPlaying) {
-                    pause()
-                    play()
+        viewModelScope.launch {
+            ttsEngine.engineChanged.collect {
+                val wasPlaying = _state.value.isPlaying
+                if (wasPlaying) {
+                    currentUtteranceId++
+                    playbackJob?.cancel()
+                    ttsEngine.stop()
+                    _state.update { it.copy(isPlaying = false, isBuffering = false) }
                 }
+                if (wasPlaying) play()
             }
         }
     }
 
     private fun loadDocument(documentId: String) {
         if (_state.value.document?.id == documentId) return
+
+        CrashReporter.setKey("document_id", documentId)
+        CrashReporter.log("loadDocument: $documentId", tag = "PlayerViewModel")
 
         loadDocumentJob?.cancel()
         pause()
@@ -110,79 +123,52 @@ class PlayerViewModel(
             }
 
             launch {
-                getParagraphsUseCase(documentId).collect { paragraphs ->
-                    _state.update { it.copy(paragraphs = paragraphs, isLoading = false) }
-                }
+                getParagraphsUseCase(documentId)
+                    .first()
+                    .let { paragraphs ->
+                        playerLog("[DEBUG] setPlaylist called with ${paragraphs.size} paragraphs")
+                        ttsEngine.setPlaylist(paragraphs)
+                        _state.update { it.copy(paragraphs = paragraphs, isLoading = false) }
+                    }
             }
         }
     }
 
     private fun play() {
+
+        if (!_state.value.isLoaded) {
+            playerLog("[DEBUG] play() aborted: isLoaded=false, paragraphs=${_state.value.paragraphs.size}, document=${_state.value.document?.id}")
+            return
+        }
+        if (_state.value.isLoading) {
+            playerLog("[DEBUG] play() aborted: isLoading=true")
+            return
+        }
+        playerLog("[DEBUG] play() started: index=${_state.value.currentParagraphIndex}, paragraphs=${_state.value.paragraphs.size}")
+
         if (!_state.value.isLoaded) return
         if (_state.value.isLoading) return
-        val paragraph = _state.value.currentParagraph ?: return
         val currentIndex = _state.value.currentParagraphIndex
-        val paragraphs = _state.value.paragraphs
-        val speed = _state.value.playbackSpeed
 
-        if (ttsQueue == null) {
-            ttsEngine.piperEngine()?.let {
-                ttsQueue = TtsQueue(it)
-                playerLog("play: TtsQueue created (lazy init)")
-            }  // if observePreferences didn't create it
-        }
+        CrashReporter.log("play: index=$currentIndex", tag = "PlayerViewModel")
 
         val utteranceId = ++currentUtteranceId
         playbackJob?.cancel()
         ttsEngine.stop()
         _state.update { it.copy(isPlaying = true) }
 
-        playerLog("play(index=$currentIndex, utterance=$utteranceId, speed=$speed)")
-
         playbackJob = viewModelScope.launch {
-            val queue = ttsQueue
-
-            if (queue != null) {
-                val cached = queue.getCachedAudio(currentIndex)
-                playerLog("queue=${if (cached != null) "CACHE HIT" else "CACHE MISS"} for index=$currentIndex")
-
-                if (cached == null) {
-                    _state.update { it.copy(isBuffering = true) }
-                }
-
-                val audio = try {
-                    queue.getAudio(currentIndex, paragraph.text, speed)
-                } finally {
-                    _state.update { it.copy(isBuffering = false) }
-                }  // getAudio: instant if prefetch already worked, otherwise generate
-
-                if (utteranceId != currentUtteranceId) {
-                    playerLog("utteranceId outdated after getAudio ($utteranceId != $currentUtteranceId), exiting")
-                    return@launch
-                }
-
-                queue.prefetchAhead(currentIndex, paragraphs, speed)
-                // one more check because
-                // CACHE HIT + fast double-next can skip first check
-                if (utteranceId != currentUtteranceId) {
-                    playerLog("utteranceId outdated before playAudio ($utteranceId != $currentUtteranceId), exiting")
-                    return@launch
-                }
-
-                playerLog("playAudio($currentIndex) began, size=${audio.size}b")
-                ttsEngine.piperEngine()?.playAudio(audio)
-                playerLog("playAudio($currentIndex) finished")
-
-            } else {
-                playerLog("Native TTS path: speak($currentIndex)")
-                ttsEngine.speak(paragraph.text, speed)
-                playerLog("speak($currentIndex) finished")
+            try {
+                ttsEngine.speak(currentIndex, _state.value.playbackSpeed)
+            } catch (e: Exception) {
+                if (e is CancellationException) return@launch
+                CrashReporter.recordException(e, "speak failed at index=$currentIndex")
+                _state.update { it.copy(isPlaying = false) }
+                return@launch
             }
+
             if (utteranceId == currentUtteranceId) {
-                playerLog("navigateParagraph(+1) from index=$currentIndex")
                 navigateParagraph(+1)
-            }else {
-                playerLog("utteranceId outdated after playback ($utteranceId != $currentUtteranceId), skipping navigation")
             }
         }
     }
@@ -191,9 +177,8 @@ class PlayerViewModel(
         playerLog("pause() utterance=$currentUtteranceId")
         currentUtteranceId++
         playbackJob?.cancel()
-        ttsQueue?.clear()
         ttsEngine.stop()
-        _state.update { it.copy(isPlaying = false) }
+        _state.update { it.copy(isPlaying = false, isBuffering = false) }
     }
 
     private fun stop() {
@@ -204,7 +189,9 @@ class PlayerViewModel(
     private fun navigateParagraph(delta: Int) {
         val current = _state.value
         if (current.paragraphs.isEmpty()) return
+
         val newIndex = current.currentParagraphIndex + delta
+        val wasPlaying = _state.value.isPlaying
 
         if (newIndex > current.paragraphs.lastIndex) {
             pause()
@@ -214,31 +201,29 @@ class PlayerViewModel(
             return
         }
 
-        if (delta < 0) {
-            playerLog("navigateParagraph(-1): clear queue")
-            ttsQueue?.clear()
-        }
         val safeIndex = newIndex.coerceIn(0, current.paragraphs.lastIndex)
-        playerLog("navigateParagraph($delta): ${current.currentParagraphIndex} → $safeIndex")
+        currentUtteranceId++
+        playbackJob?.cancel()
+
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (_state.value.isPlaying) {
-            play()
-        }
+        if (wasPlaying) play()
+
     }
 
     private fun seekTo(index: Int) {
         if (_state.value.paragraphs.isEmpty()) return
         val safeIndex = index.coerceIn(0, _state.value.paragraphs.lastIndex)
-        playerLog("seekTo($safeIndex): clear queue")
-        ttsQueue?.clear()
+        val wasPlaying = _state.value.isPlaying
+
+        currentUtteranceId++
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (_state.value.isPlaying) {
-            play()
-        }
+        playerLog("seekTo($safeIndex): clear queue")
+
+        if (wasPlaying) play()
     }
 
     private fun changeSpeed(speed: Float) {
@@ -261,6 +246,5 @@ class PlayerViewModel(
     override fun onCleared() {
         super.onCleared()
         ttsEngine.shutdown()
-        ttsQueue?.shutdown()
     }
 }

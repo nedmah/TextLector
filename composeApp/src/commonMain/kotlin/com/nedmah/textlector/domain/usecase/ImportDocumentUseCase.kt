@@ -2,6 +2,7 @@ package com.nedmah.textlector.domain.usecase
 
 import com.benasher44.uuid.uuid4
 import com.nedmah.textlector.common.platform.file.FileReader
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.ImportProgress
 import com.nedmah.textlector.domain.model.Paragraph
@@ -90,6 +91,7 @@ class ImportDocumentUseCase(
 
             send(ImportProgress.Success(ProcessedDocument(document, paragraphs)))
         } catch (e: Exception) {
+            CrashReporter.recordException(e, "Import failed: type=$type, uri=$uri")
             send(ImportProgress.Error(e.message ?: "Import failed"))
         }
         close()

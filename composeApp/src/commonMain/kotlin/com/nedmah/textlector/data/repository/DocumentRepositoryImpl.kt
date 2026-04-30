@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.data.db.toDbString
 import com.nedmah.textlector.data.db.toDomain
 import com.nedmah.textlector.db.DocumentQueries
@@ -70,6 +71,8 @@ class DocumentRepositoryImpl(
                     total_paragraphs = document.totalParagraphs.toLong(),
                     last_paragraph_index = document.lastParagraphIndex.toLong()
                 )
+            }.onFailure {
+                CrashReporter.recordException(it, "saveDocument failed: ${document.id}")
             }
         }
 

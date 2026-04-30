@@ -1,5 +1,8 @@
 package com.nedmah.textlector.domain.model
 
+import kotlin.experimental.ExperimentalObjCName
+import kotlin.native.ObjCName
+
 data class ProcessedDocument(
     val document: Document,
     val paragraphs: List<Paragraph>
@@ -18,6 +21,8 @@ data class Document(
     val lastParagraphIndex: Int // for progress
 )
 
+@OptIn(ExperimentalObjCName::class)
+@ObjCName("LectorParagraph")
 data class Paragraph(
     val id : String,
     val documentId : String,

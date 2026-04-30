@@ -1,6 +1,7 @@
 package com.nedmah.textlector.data.repository
 
 import android.content.Context
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.domain.model.ModelPath
 import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.VoiceId
@@ -78,6 +79,7 @@ class AndroidVoiceModelRepositoryImpl(
         } catch (e: Exception) {
             val error = ModelState.Error(e.message ?: "Download failed")
             stateFlow.value = error
+            CrashReporter.recordException(e, "downloadModel failed: ${model.id}")
             emit(error)
         }
     }.flowOn(Dispatchers.IO)

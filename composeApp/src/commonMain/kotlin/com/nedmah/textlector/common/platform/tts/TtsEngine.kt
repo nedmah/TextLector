@@ -1,5 +1,6 @@
 package com.nedmah.textlector.common.platform.tts
 
+import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.VoiceModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -12,9 +13,9 @@ interface TtsEngine {
     @HiddenFromObjC
     val engineChanged: Flow<Unit> get() = emptyFlow()
 
-    suspend fun speak(text : String, speed: Float)
-    suspend fun loadVoice(model: VoiceModel)
+    suspend fun loadVoice(model: VoiceModel) {}
+    fun setPlaylist(paragraphs: List<Paragraph>)
+    suspend fun speak(index: Int, speed: Float)
     fun stop()
     fun shutdown()
-    fun piperEngine(): PiperTtsEngine? = null
 }

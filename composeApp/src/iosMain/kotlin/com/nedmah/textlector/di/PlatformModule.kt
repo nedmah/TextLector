@@ -20,7 +20,7 @@ actual val platformModule = module {
     single<TtsEngine> {
         SwitchableTtsEngine(
             nativeEngine = IosTtsEngine(),
-            sherpaEngine = IosEngineHolder.ttsEngine ?: IosTtsEngine(),
+            sherpaEngine = IosEngineHolder.sherpaEngine ?: error("SherpaEngine not initialized"),
             preferencesRepository = get()
         )
     }

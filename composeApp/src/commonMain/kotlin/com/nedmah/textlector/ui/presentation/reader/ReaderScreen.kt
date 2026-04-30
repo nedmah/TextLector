@@ -61,8 +61,6 @@ fun ReaderScreen(
     onReaderIntent: (ReaderIntent) -> Unit,
     onPlayerIntent: (PlayerIntent) -> Unit
 ){
-
-
     Scaffold(
         topBar = {
             ReaderTopBar(
@@ -84,7 +82,9 @@ fun ReaderScreen(
                 isLoading = playerState.isLoading || playerState.isBuffering,
                 elapsed = formatMinutes(playerState.elapsedMinutes),
                 remaining = "-${formatMinutes(playerState.remainingMinutes)}",
-                onPlay = { onPlayerIntent(PlayerIntent.Play) },
+                onPlay = {
+                    onPlayerIntent(PlayerIntent.Play)
+                         },
                 onPause = { onPlayerIntent(PlayerIntent.Pause) },
                 onNext = { onPlayerIntent(PlayerIntent.NextParagraph) },
                 onPrevious = { onPlayerIntent(PlayerIntent.PreviousParagraph) },
@@ -111,7 +111,9 @@ fun ReaderScreen(
                 fontSize = readerState.fontSize,
                 onParagraphClick = { index ->
                     onPlayerIntent(PlayerIntent.SeekToParagraph(index))
-                    onPlayerIntent(PlayerIntent.Play)
+                    if (!playerState.isPlaying) {
+                        onPlayerIntent(PlayerIntent.Play)
+                    }
                 },
                 modifier = Modifier.padding(paddingValues)
             )
