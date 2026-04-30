@@ -1,7 +1,6 @@
 package com.nedmah.textlector.di
 
 import android.content.Context
-import androidx.activity.ComponentActivity
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.tts.AndroidSherpaOnnxTtsEngine
 import com.nedmah.textlector.common.platform.tts.AndroidTtsEngine
@@ -33,8 +32,8 @@ actual val platformModule = module {
     single { AndroidSherpaOnnxTtsEngine(get()) }
     single<TtsEngine> {
         SwitchableTtsEngine(
-            nativeEngine = AndroidTtsEngine(androidContext()),
-            sherpaEngine = AndroidSherpaOnnxTtsEngine(get()),
+            nativeEngine = get<AndroidTtsEngine>(),
+            sherpaEngine = get<AndroidSherpaOnnxTtsEngine>(),
             preferencesRepository = get()
         )
     }

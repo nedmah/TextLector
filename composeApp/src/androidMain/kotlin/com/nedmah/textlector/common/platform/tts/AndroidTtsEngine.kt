@@ -1,11 +1,9 @@
 package com.nedmah.textlector.common.platform.tts
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import com.nedmah.textlector.domain.model.VoiceModel
+import com.nedmah.textlector.domain.model.Paragraph
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -20,6 +18,7 @@ class AndroidTtsEngine(
 
     private var tts: TextToSpeech? = null
     private var isReady : Boolean = false
+    private var paragraphs: List<Paragraph> = emptyList()
 
     init {
         tts = TextToSpeech(context) { status ->
@@ -30,19 +29,21 @@ class AndroidTtsEngine(
         }
     }
 
-    override suspend fun speak(text: String, speed: Float) {
+    override fun setPlaylist(paragraphs: List<Paragraph>) {
+        this.paragraphs = paragraphs
+    }
+
+    override suspend fun speak(index: Int, speed: Float) {
         if (!isReady) return
+
+        val text = paragraphs.getOrNull(index)?.text ?: return
 
         suspendCancellableCoroutine { cont ->
             tts?.setSpeechRate(speed)
             tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {}
-                override fun onDone(utteranceId: String?) {
-                    cont.resume(Unit)
-                }
-                override fun onError(utteranceId: String?) {
-                    cont.resume(Unit)
-                }
+                override fun onDone(utteranceId: String?) { cont.resume(Unit) }
+                override fun onError(utteranceId: String?) { cont.resume(Unit) }
             })
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
 
@@ -50,11 +51,7 @@ class AndroidTtsEngine(
         }
     }
 
-    override suspend fun loadVoice(model: VoiceModel) = Unit
-
-    override fun stop() {
-        tts?.stop()
-    }
+    override fun stop() { tts?.stop() }
 
     override fun shutdown() {
         tts?.shutdown()

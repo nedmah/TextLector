@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalTime::class)
+@file:OptIn(ExperimentalTime::class, ExperimentalAtomicApi::class, ExperimentalAtomicApi::class)
 
 package com.nedmah.textlector.common.platform.tts
 
@@ -13,14 +13,20 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-private const val TTS_QUEUE_LOGS = false
+private const val TTS_QUEUE_LOGS = true
 
 private fun ttsLog(message: String) {
-    if (TTS_QUEUE_LOGS) println("[TtsQueue ${Clock.System.now().toEpochMilliseconds() % 100_000}ms] $message")
+    if (TTS_QUEUE_LOGS) println(
+        "[TtsQueue ${
+            Clock.System.now().toEpochMilliseconds() % 100_000
+        }ms] $message"
+    )
 }
 
 /**
@@ -35,15 +41,17 @@ private fun ttsLog(message: String) {
  * getAudio(i) called after complete → returns immediately
  */
 class TtsQueue(
-    val engine : PiperTtsEngine,
-    val bufferSize : Int = 1
+    val engine: SherpaOnnxTtsEngine,
+    val bufferSize: Int = 1
 ) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val mutex = Mutex()
 
     // key - paragraph index. value - deferred with audio (in-progress oor completed).
     private val pending = mutableMapOf<Int, CompletableDeferred<ByteArray>>()
-    private var generationId = 0
+
+
+    private val generationId = AtomicInt(0)
 
     /**
      * calls AFTER we began to play [currentIndex].
@@ -52,7 +60,7 @@ class TtsQueue(
      */
     fun prefetchAhead(currentIndex: Int, paragraphs: List<Paragraph>, speed: Float) {
         scope.launch {
-            val capturedGeneration = mutex.withLock { generationId }
+            val capturedGeneration = generationId.load()
             evictStale(currentIndex)
 
             val from = currentIndex + 1
@@ -66,7 +74,7 @@ class TtsQueue(
 
             for (i in from until until) {
 
-                val isStale = mutex.withLock { generationId != capturedGeneration }
+                val isStale = generationId.load() != capturedGeneration
                 if (isStale) {
                     ttsLog("  paragraph[$i]: is old (clear called), cancelling")
                     break
@@ -90,7 +98,7 @@ class TtsQueue(
                     }
 
                     val elapsed = Clock.System.now().toEpochMilliseconds() - startMs
-                    val stillValid = mutex.withLock { generationId == capturedGeneration }
+                    val stillValid = generationId.load() == capturedGeneration
                     if (stillValid) {
                         deferred.complete(audio)
                         ttsLog("  paragraph[$i]: ready in ${elapsed}ms, size=${audio.size}b")
@@ -122,7 +130,7 @@ class TtsQueue(
 
         if (shouldGenerate) {
             ttsLog("getAudio($index): CACHE MISS — generating sync")
-            val capturedGeneration = mutex.withLock { generationId }
+            val capturedGeneration = generationId.load()
             val startMs = Clock.System.now().toEpochMilliseconds()
             try {
                 val audio = engine.generate(text, speed)
@@ -132,31 +140,40 @@ class TtsQueue(
                     throw CancellationException("generate() returned empty audio")
                 }
                 val elapsed = Clock.System.now().toEpochMilliseconds() - startMs
-                val isStale = mutex.withLock { generationId != capturedGeneration }  // if while generating clear was called
+                val isStale =
+                    generationId.load() != capturedGeneration  // if while generating clear was called
                 if (isStale) {
                     deferred.cancel()
                     ttsLog("getAudio($index): ready in ${elapsed}ms, but is old - calcelling")
                     throw CancellationException("Generation invalidated by clear()")
                 }
-                deferred.complete(audio)
-                ttsLog("getAudio($index): ready in ${elapsed}ms, size=${audio.size}b")
+                val completed = deferred.complete(audio)
+                ttsLog("getAudio($index): ready in ${elapsed}ms, size=${audio.size}b, completed=$completed")
+
+                mutex.withLock { pending.remove(index) }
+                return audio
             } catch (e: Exception) {
-                deferred.completeExceptionally(e)
+                if (!deferred.isCompleted) deferred.completeExceptionally(e)
                 throw e
             }
         } else {
-            if (!deferred.isCompleted) {
-                val startMs = Clock.System.now().toEpochMilliseconds()
-                deferred.await()
-                val waited = Clock.System.now().toEpochMilliseconds() - startMs
-                ttsLog("getAudio($index): waited for ${waited}ms")
-            } else {
-                ttsLog("getAudio($index): CACHE HIT - return instant")
+            val audio = try {
+                if (!deferred.isCompleted) {
+                    val startMs = Clock.System.now().toEpochMilliseconds()
+                    val result = deferred.await()
+                    ttsLog("getAudio($index): waited for ${Clock.System.now().toEpochMilliseconds() - startMs}ms")
+                    result
+                } else {
+                    ttsLog("getAudio($index): CACHE HIT - return instant")
+                    deferred.await()
+                }
+            } catch (e: Exception) {
+                mutex.withLock { pending.remove(index) }
+                throw e
             }
+            mutex.withLock { pending.remove(index) }
+            return audio
         }
-
-        mutex.withLock { pending.remove(index) }
-        return deferred.await()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -167,9 +184,9 @@ class TtsQueue(
     }
 
     fun clear() {
+        generationId.addAndFetch(1)
         scope.launch {
             mutex.withLock {
-                generationId++
                 pending.values.forEach { it.cancel() }
                 pending.clear()
             }
@@ -177,8 +194,8 @@ class TtsQueue(
     }
 
     suspend fun clearSync() {
+        generationId.addAndFetch(1)
         mutex.withLock {
-            generationId++
             pending.values.forEach { it.cancel() }
             pending.clear()
         }

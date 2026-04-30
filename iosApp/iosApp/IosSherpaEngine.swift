@@ -6,18 +6,25 @@ import Foundation
 import ComposeApp
 
 
-@objc class IosSherpaEngine: NSObject, PiperTtsEngine {
+@objc class IosSherpaEngine: NSObject, SherpaOnnxTtsEngine {
 
     private let bridge = SherpaOnnxTtsBridge()
     private let repository: IosVoiceModelRepositoryImpl
     private var isModelLoaded = false
+    private var paragraphs: [ComposeApp.LectorParagraph] = []
 
     init(repository: IosVoiceModelRepositoryImpl) {
         self.repository = repository
     }
 
-    func speak(text: String, speed: Float) async throws {
+    func setPlaylist(paragraphs: [LectorParagraph]) {
+        self.paragraphs = paragraphs as [ComposeApp.LectorParagraph]
+    }
+
+    func speak(index: Int32, speed: Float) async throws {
         guard isModelLoaded else { return }
+        guard index >= 0 && Int(index) < paragraphs.count else { return }
+        let text = paragraphs[Int(index)].text
         bridge.speak(text: text, speed: speed)
     }
 
@@ -60,7 +67,4 @@ import ComposeApp
         bridge.stop()
     }
 
-    func piperEngine() -> (any PiperTtsEngine)? {
-        return self
-    }
 }

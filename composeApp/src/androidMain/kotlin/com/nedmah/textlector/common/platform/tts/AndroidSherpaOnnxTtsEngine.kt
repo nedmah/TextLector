@@ -3,35 +3,39 @@ package com.nedmah.textlector.common.platform.tts
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import android.util.Log
 import com.k2fsa.sherpa.onnx.OfflineTts
 import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
 import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
 import com.nedmah.textlector.domain.repository.VoiceModelRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AndroidSherpaOnnxTtsEngine(
     private val modelRepository: VoiceModelRepository
-) : PiperTtsEngine {
+) : SherpaOnnxTtsEngine {
 
     private var tts: OfflineTts? = null
     private var audioTrack: AudioTrack? = null
     private var currentVoiceId: VoiceId? = null
     private var loadingJob: Job? = null
+    private val engineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private var paragraphs: List<Paragraph> = emptyList()
 
     override suspend fun loadVoice(model: VoiceModel) {
         if (model.id == currentVoiceId) return
-        loadingJob = CoroutineScope(Dispatchers.IO).launch {
+        loadingJob = engineScope.launch {
             val path = modelRepository.getModelPath(model.id) ?: return@launch
             tts?.release()
             tts = buildOfflineTts(path)
@@ -40,17 +44,17 @@ class AndroidSherpaOnnxTtsEngine(
         }
     }
 
-    override suspend fun speak(text: String, speed: Float) {
+    override fun setPlaylist(paragraphs: List<Paragraph>) {
+        this.paragraphs = paragraphs
+    }
+
+    override suspend fun speak(index: Int, speed: Float) {
         loadingJob?.join()
-        val engine = tts
-        if (engine == null) {
-            Log.e("SherpaEngine", "speak() called but tts is null")
-            return
-        }
+        val engine = tts ?: return
+        val text = paragraphs.getOrNull(index)?.text ?: return
 
         withContext(Dispatchers.IO) {
             val audio = engine.generate(text = text, sid = 0, speed = speed)
-
             if (coroutineContext.isActive) {
                 playAudio(audio.samples, audio.sampleRate)
             }
@@ -65,11 +69,34 @@ class AndroidSherpaOnnxTtsEngine(
     }
 
     override fun shutdown() {
+        engineScope.coroutineContext[Job]?.cancel()
         audioTrack?.release()
         audioTrack = null
         tts?.release()
         tts = null
         currentVoiceId = null
+    }
+
+    override suspend fun generate(text: String, speed: Float): ByteArray {
+        loadingJob?.join()
+        val engine = tts ?: return ByteArray(0)
+        return withContext(Dispatchers.IO) {
+            try {
+                val audio = engine.generate(text = text, sid = 0, speed = speed)
+                samplesToWav(audio.samples, audio.sampleRate)
+            } catch (e: Exception) {
+                CrashReporter.recordException(e, "generate failed")
+                ByteArray(0)
+            }
+        }
+    }
+
+    override suspend fun playAudio(audio: ByteArray) {
+        withContext(Dispatchers.IO) {
+            val samples = wavToSamples(audio)
+            val sampleRate = wavSampleRate(audio)
+            if (samples.isNotEmpty()) playAudio(samples, sampleRate)
+        }
     }
 
     private fun buildOfflineTts(path: ModelPath): OfflineTts {
@@ -143,23 +170,6 @@ class AndroidSherpaOnnxTtsEngine(
         // wait until it finishes
         if (track.playState == AudioTrack.PLAYSTATE_PLAYING) {
             track.stop()
-        }
-    }
-
-    override suspend fun generate(text: String, speed: Float): ByteArray {
-        loadingJob?.join()
-        val engine = tts ?: return ByteArray(0)
-        return withContext(Dispatchers.IO) {
-            val audio = engine.generate(text = text, sid = 0, speed = speed)
-            samplesToWav(audio.samples, audio.sampleRate)
-        }
-    }
-
-    override suspend fun playAudio(audio: ByteArray) {
-        withContext(Dispatchers.IO) {
-            val samples = wavToSamples(audio)
-            val sampleRate = wavSampleRate(audio)
-            if (samples.isNotEmpty()) playAudio(samples, sampleRate)
         }
     }
 
