@@ -1,0 +1,79 @@
+<resources>
+    <!-- Common -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_download">Download</string>
+    <string name="action_see_all">see all</string>
+    <string name="app_name">TextLector</string>
+    <string name="made_by">PROJECT WAS MADE BY @NEDMAH</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_library">Library</string>
+    <string name="nav_import">Import</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Library -->
+    <string name="library_title">Library</string>
+    <string name="library_favorite_docs">Favorites</string>
+    <string name="library_recent_docs">Recent Documents</string>
+    <string name="library_sort_last_opened">Last Opened</string>
+    <string name="library_sort_date_added">Date Added</string>
+    <plurals name="library_collection_size">
+        <item quantity="one">%1$d item in your collection</item>
+        <item quantity="other">%1$d items in your collection</item>
+    </plurals>
+    <string name="library_reading_time">%1$dm</string>
+
+    <!-- Import -->
+    <string name="import_title">Import</string>
+    <string name="import_subtitle">Bring your physical books and digital documents into your personal library.</string>
+    <string name="import_section_manual">MANUAL TRANSCRIPTION</string>
+    <string name="import_section_files">IMPORT FILES</string>
+    <string name="import_manual_placeholder">Title\nPaste or type text here...</string>
+    <string name="import_process_button">Process Document</string>
+    <string name="import_analyzing">Analyzing...</string>
+    <string name="import_analyzing_text">Analyzing text...</string>
+    <string name="import_reading_pages">Reading %1$d of %2$d pages...</string>
+    <string name="import_pages_progress">%1$d/%2$d pages</string>
+    <string name="import_from_url">Import from URL</string>
+    <string name="import_from_camera">Scan via Camera</string>
+
+    <!-- Import Success Sheet -->
+    <string name="import_success_title">Import Successful</string>
+    <string name="import_success_ready">READY FOR YOUR LIBRARY</string>
+    <string name="import_success_word_count">WORD COUNT</string>
+    <string name="import_success_reading_time">READING TIME</string>
+    <string name="import_success_reading_minutes">%1$d min</string>
+    <string name="import_success_add">Add to Library</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_voice">VOICE PROFILE</string>
+    <string name="settings_section_engine">AUDIO ENGINE</string>
+    <string name="settings_section_language">VOICE LANGUAGE</string>
+    <string name="settings_section_appearance">APPEARANCE</string>
+    <string name="settings_section_playback_speed">PLAYBACK SPEED</string>
+    <string name="settings_section_font_size">READING FONT SIZE</string>
+    <string name="settings_section_voice_language">VOICE LANGUAGE</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_engine_title">Audio Engine</string>
+    <string name="settings_engine_subtitle">Choose the TTS engine for reading</string>
+    <string name="settings_voice_language">Voice Language</string>
+    <string name="settings_voice_male">Male</string>
+    <string name="settings_voice_female">Female</string>
+    <string name="settings_engine_system_title">System TTS</string>
+    <string name="settings_engine_system_subtitle">Uses your device\'s built-in voice</string>
+    <string name="settings_engine_piper_title">Piper</string>
+    <string name="settings_engine_piper_subtitle">High quality offline neural TTS</string>
+
+    <!-- Voice Model -->
+    <string name="voice_model_ready">Voice model ready</string>
+    <string name="voice_model_not_downloaded">Voice model not downloaded</string>
+    <string name="voice_model_downloading">Downloading... %1$d%%</string>
+    <string name="voice_model_download_failed">Download failed</string>
+
+    <!-- Delete Dialog -->
+    <string name="delete_dialog_title">Delete document?</string>
+    <string name="delete_dialog_message">This action cannot be undone.</string>
+</resources>

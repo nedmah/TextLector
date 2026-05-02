@@ -17,13 +17,16 @@ import com.nedmah.textlector.common.navigation.ImportRoute
 import com.nedmah.textlector.common.navigation.LibraryRoute
 import com.nedmah.textlector.common.navigation.SettingsRoute
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_import
 import textlector.composeapp.generated.resources.ic_library
 import textlector.composeapp.generated.resources.ic_settings
+import textlector.composeapp.generated.resources.nav_import
+import textlector.composeapp.generated.resources.nav_library
+import textlector.composeapp.generated.resources.nav_settings
 
 data class BottomNavItem(
-    val label: String,
     val route: Any,
     val icon: @Composable () -> Unit
 )
@@ -36,22 +39,19 @@ fun BottomNavBar(navController: NavController) {
 
     val items = listOf(
         BottomNavItem(
-            "Library",
             LibraryRoute
         ) {
-             Icon(painterResource(Res.drawable.ic_library), contentDescription = "Library")
+            Icon(painterResource(Res.drawable.ic_library), contentDescription = "Library")
         },
         BottomNavItem(
-            "Import",
             ImportRoute
         ) {
-             Icon(painterResource(Res.drawable.ic_import), contentDescription = "Import")
+            Icon(painterResource(Res.drawable.ic_import), contentDescription = "Import")
         },
         BottomNavItem(
-            "Settings",
             SettingsRoute
         ) {
-             Icon(painterResource(Res.drawable.ic_settings), contentDescription = "Settings")
+            Icon(painterResource(Res.drawable.ic_settings), contentDescription = "Settings")
         }
     )
 
@@ -70,7 +70,17 @@ fun BottomNavBar(navController: NavController) {
                         }
                     },
                     icon = item.icon,
-                    label = { Text(item.label) },
+                    label = {
+                        Text(
+                            stringResource(
+                                when (item.route) {
+                                    is LibraryRoute -> Res.string.nav_library
+                                    is ImportRoute -> Res.string.nav_import
+                                    else -> Res.string.nav_settings
+                                }
+                            )
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
                         selectedIconColor = MaterialTheme.colorScheme.primary,

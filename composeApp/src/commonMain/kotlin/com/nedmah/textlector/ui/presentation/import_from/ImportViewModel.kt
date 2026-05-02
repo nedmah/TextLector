@@ -8,6 +8,7 @@ import com.nedmah.textlector.domain.model.SourceType
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
+import com.nedmah.textlector.domain.util.UrlValidator
 import com.nedmah.textlector.ui.presentation.import_from.ImportEffect.ShowError
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,15 +53,25 @@ class ImportViewModel(
             ImportIntent.DismissImport -> dismissImport()
 
             ImportIntent.OpenUrlSheet -> _state.update { it.copy(showUrlSheet = true) }
-            ImportIntent.DismissUrlSheet -> _state.update { it.copy(showUrlSheet = false, urlText = "") }
+            ImportIntent.DismissUrlSheet -> _state.update { it.copy(showUrlSheet = false, urlText = "", urlError = null) }
 
-            is ImportIntent.EnterUrl -> _state.update { it.copy(urlText = intent.url) }
+            is ImportIntent.EnterUrl -> {
+                val error = UrlValidator.validate(intent.url)
+                _state.update { it.copy(
+                    urlText = intent.url,
+                    urlError = if (error != null) UrlValidator.errorMessage(error) else null
+                ) }
+            }
             ImportIntent.ImportFromUrl -> importFromUrl()
         }
     }
 
     private fun importManually() {
         val text = _state.value.manualText
+        if (text.isBlank()) {
+            _state.update { it.copy(error = "Text cannot be empty") }
+            return
+        }
 
         val lines = text.lines()
         val title: String
@@ -72,10 +83,6 @@ class ImportViewModel(
         } else {
             title = lines.firstOrNull { it.isNotBlank() }?.trim() ?: "Untitled"
             bodyText = lines.drop(1).joinToString("\n").trim()
-            if (bodyText.isBlank()) {
-                _state.update { it.copy(error = "Text cannot be empty") }
-                return
-            }
         }
 
         if (bodyText.isBlank()) {
@@ -152,15 +159,8 @@ class ImportViewModel(
 
     private fun importFromUrl() {
         val url = _state.value.urlText.trim()
-        if (url.isBlank()) return
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            _state.update { it.copy(error = "Invalid URL — must start with http:// or https://") }
-            return
-        }
-
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-
+            _state.update { it.copy(isLoading = true, urlError = null) }
             urlContentFetcher.fetchText(url)
                 .onSuccess { (title, text) ->
                     inputTextManuallyUseCase(title, text)
@@ -170,7 +170,8 @@ class ImportViewModel(
                                     isLoading = false,
                                     showUrlSheet = false,
                                     processedDocument = document,
-                                    urlText = ""
+                                    urlText = "",
+                                    urlError = null
                                 )
                             }
                         }

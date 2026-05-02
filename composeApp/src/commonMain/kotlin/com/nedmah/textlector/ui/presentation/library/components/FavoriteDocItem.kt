@@ -28,10 +28,11 @@ import textlector.composeapp.generated.resources.ic_star_filled
 fun FavoriteDocItem(
     document: Document,
     onClick: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .width(160.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),

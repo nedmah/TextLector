@@ -43,7 +43,6 @@ class LibraryViewModel(
 
     fun onEvent(intent: com.nedmah.textlector.ui.presentation.library.LibraryIntent){
         when(intent){
-            is LibraryIntent.DeleteDocument -> deleteDocument(intent.id)
             is LibraryIntent.ToggleFavorite -> toggleFavorite(intent.id, intent.isFavorite)
             is LibraryIntent.SearchDocuments -> searchForDocs(intent.query)
             is LibraryIntent.SelectDocument -> selectDocument(intent.id)
@@ -51,6 +50,13 @@ class LibraryViewModel(
                 LibraryEffect.NavigateToImport)
 
             is LibraryIntent.ChangeSortType -> changeSortOrder(intent.sortOrder)
+            LibraryIntent.CancelDelete -> _state.update { it.copy(pendingDeleteDocumentId = null) }
+            LibraryIntent.ConfirmDelete -> {
+                val id = _state.value.pendingDeleteDocumentId ?: return
+                _state.update { it.copy(pendingDeleteDocumentId = null) }
+                deleteDocument(id)
+            }
+            is LibraryIntent.RequestDelete -> _state.update { it.copy(pendingDeleteDocumentId = intent.id) }
         }
     }
 
@@ -114,15 +120,12 @@ class LibraryViewModel(
         }
     }
 
-    private fun deleteDocument(id : String)= viewModelScope.launch {
+    private fun deleteDocument(id: String) = viewModelScope.launch {
         deleteDocumentUseCase.invoke(id)
-            .onSuccess {
-                sendEffect(LibraryEffect.DocumentDeleted)
-            }
-            .onFailure {
-                sendEffect(LibraryEffect.ShowError(it.message ?: "Delete failed"))
-            }
+            .onSuccess { sendEffect(LibraryEffect.DocumentDeleted) }
+            .onFailure { sendEffect(LibraryEffect.ShowError(it.message ?: "Delete failed")) }
     }
+
 
     private fun sendEffect(effect: com.nedmah.textlector.ui.presentation.library.LibraryEffect) {
         viewModelScope.launch { _effect.send(effect) }

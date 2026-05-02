@@ -16,8 +16,11 @@ data class PlayerState(
         get() = paragraphs.getOrNull(currentParagraphIndex)
 
     val progress: Float
-        get() = if (paragraphs.isEmpty()) 0f
-        else currentParagraphIndex.toFloat() / (paragraphs.size - 1)
+        get() = when {
+            paragraphs.isEmpty() -> 0f
+            paragraphs.size == 1 -> 0f
+            else -> currentParagraphIndex.toFloat() / (paragraphs.size - 1)
+        }
 
     val elapsedMinutes: Float
         get() {

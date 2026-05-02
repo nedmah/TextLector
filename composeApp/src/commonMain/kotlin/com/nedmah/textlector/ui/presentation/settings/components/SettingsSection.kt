@@ -26,8 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nedmah.textlector.domain.model.ModelState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.action_delete
+import textlector.composeapp.generated.resources.action_download
+import textlector.composeapp.generated.resources.action_retry
 import textlector.composeapp.generated.resources.ic_success
+import textlector.composeapp.generated.resources.voice_model_download_failed
+import textlector.composeapp.generated.resources.voice_model_downloading
+import textlector.composeapp.generated.resources.voice_model_not_downloaded
+import textlector.composeapp.generated.resources.voice_model_ready
 
 @Composable
 fun SettingsSection(
@@ -143,12 +151,12 @@ fun VoiceDownloadBanner(
         when (voiceState) {
             is ModelState.NotDownloaded -> {
                 Text(
-                    text = "Voice model not downloaded",
+                    text = stringResource(Res.string.voice_model_not_downloaded),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Download",
+                    text = stringResource(Res.string.action_download),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -161,7 +169,7 @@ fun VoiceDownloadBanner(
             is ModelState.Downloading -> {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Downloading... ${(voiceState.progress * 100).toInt()}%",
+                        text = stringResource(Res.string.voice_model_downloading,(voiceState.progress * 100).toInt()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -176,12 +184,12 @@ fun VoiceDownloadBanner(
 
             is ModelState.Ready -> {
                 Text(
-                    text = "Voice model ready",
+                    text = stringResource(Res.string.voice_model_ready),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Delete",
+                    text = stringResource(Res.string.action_delete),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier
@@ -193,13 +201,13 @@ fun VoiceDownloadBanner(
 
             is ModelState.Error -> {
                 Text(
-                    text = "Download failed",
+                    text = stringResource(Res.string.voice_model_download_failed),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "Retry",
+                    text = stringResource(Res.string.action_retry),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
