@@ -26,10 +26,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.action_cancel
 import textlector.composeapp.generated.resources.ic_success
 import textlector.composeapp.generated.resources.ic_text_doc
 import textlector.composeapp.generated.resources.ic_time
+import textlector.composeapp.generated.resources.import_success_add
+import textlector.composeapp.generated.resources.import_success_reading_minutes
+import textlector.composeapp.generated.resources.import_success_reading_time
+import textlector.composeapp.generated.resources.import_success_ready
+import textlector.composeapp.generated.resources.import_success_title
+import textlector.composeapp.generated.resources.import_success_word_count
 
 @Composable
 fun ImportSuccessSheet(
@@ -62,13 +70,13 @@ fun ImportSuccessSheet(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Import Successful",
+            text = stringResource(Res.string.import_success_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "READY FOR YOUR LIBRARY",
+            text = stringResource(Res.string.import_success_ready),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -97,7 +105,7 @@ fun ImportSuccessSheet(
                 // word count
                 Column {
                     Text(
-                        text = "WORD COUNT",
+                        text = stringResource(Res.string.import_success_word_count),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -124,7 +132,7 @@ fun ImportSuccessSheet(
                 // reading time
                 Column {
                     Text(
-                        text = "READING TIME",
+                        text = stringResource(Res.string.import_success_reading_time),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -140,7 +148,7 @@ fun ImportSuccessSheet(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "${document.estimatedReadingMinutes} min",
+                            text = stringResource(Res.string.import_success_reading_minutes,document.estimatedReadingMinutes),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -162,7 +170,7 @@ fun ImportSuccessSheet(
             )
         ) {
             Text(
-                text = "Add to Library",
+                text = stringResource(Res.string.import_success_add),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White
             )
@@ -173,7 +181,7 @@ fun ImportSuccessSheet(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Cancel",
+                text = stringResource(Res.string.action_cancel),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -2,7 +2,6 @@ package com.nedmah.textlector.data.repository
 
 import com.nedmah.textlector.domain.model.UserPreferences
 import com.nedmah.textlector.domain.model.VoiceGender
-import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.repository.PreferencesRepository
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
@@ -77,7 +76,7 @@ class PreferencesRepositoryImpl(
                 speechVoice = VoiceGender.valueOf(basic[0]),
                 speechSpeed = basic[1].toFloatOrNull()?.takeIf { !it.isNaN() } ?: 1f,
                 fontSize = basic[2].toInt(),
-                isDarkMode = basic[3].toBoolean(),
+                isDarkMode = basic[3].toBooleanStrictOrNull(),
                 language = basic[4],
                 useSherpaEngine = useSherpa
             )

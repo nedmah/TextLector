@@ -16,12 +16,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
+import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.import_manual_placeholder
 
 @Composable
 fun ManualTextInput(
@@ -57,8 +61,16 @@ fun ManualTextInput(
         }
     }
 
+    val safeSelection = TextRange(
+        textFieldValue.selection.start.coerceIn(0, annotatedText.length),
+        textFieldValue.selection.end.coerceIn(0, annotatedText.length)
+    )
+
     TextField(
-        value = textFieldValue.copy(annotatedString = annotatedText),
+        value = textFieldValue.copy(
+            annotatedString = annotatedText,
+            selection = safeSelection
+        ),
         onValueChange = { newValue ->
             textFieldValue = newValue
             onTextChange(newValue.text)
@@ -68,7 +80,7 @@ fun ManualTextInput(
             .height(180.dp),
         placeholder = {
             Text(
-                text = "Title\nPaste or type text here...",
+                text = stringResource(Res.string.import_manual_placeholder),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

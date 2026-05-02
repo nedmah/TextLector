@@ -80,6 +80,8 @@ fun ReaderScreen(
                 progress = playerState.progress,
                 isEnabled = playerState.isLoaded && !playerState.isLoading,
                 isLoading = playerState.isLoading || playerState.isBuffering,
+                canGoNext = playerState.currentParagraphIndex < playerState.paragraphs.lastIndex,
+                canGoPrevious = playerState.currentParagraphIndex > 0,
                 elapsed = formatMinutes(playerState.elapsedMinutes),
                 remaining = "-${formatMinutes(playerState.remainingMinutes)}",
                 onPlay = {

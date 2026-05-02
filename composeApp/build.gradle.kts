@@ -127,8 +127,8 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 121
-        versionName = "1.2.1"
+        versionCode = 122
+        versionName = "1.2.2"
     }
     packaging {
         resources {

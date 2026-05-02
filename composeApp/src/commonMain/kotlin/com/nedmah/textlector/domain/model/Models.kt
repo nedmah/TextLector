@@ -49,7 +49,7 @@ data class UserPreferences(
     val speechSpeed: Float,  // 0,5f - 2f
     val speechVoice: VoiceGender,
     val fontSize: Int,
-    val isDarkMode: Boolean,
+    val isDarkMode: Boolean?,
     val language: String,
     val useSherpaEngine: Boolean = false,
 ) {

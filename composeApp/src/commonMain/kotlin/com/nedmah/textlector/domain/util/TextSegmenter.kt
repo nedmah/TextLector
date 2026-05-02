@@ -49,7 +49,6 @@ object TextSegmenter {
             .replace(Regex("[ \\t]+"), " ") // lots of spaces
             .replace(Regex("\\n{3,}"), "\n\n") // 3+ empty strings
             .replace(Regex("(?m)^\\s*\\d+\\s*$"), "") // when only nums
-            .replace(Regex("(?m)^.{1,3}$\\n"), "") // garbage
             .trim()
     }
 
