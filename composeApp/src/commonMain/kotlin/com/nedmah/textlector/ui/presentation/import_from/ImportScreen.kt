@@ -5,11 +5,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,6 +48,7 @@ import com.nedmah.textlector.ui.presentation.import_from.components.ImportSucces
 import com.nedmah.textlector.ui.presentation.import_from.components.ManualTextInput
 import com.nedmah.textlector.ui.presentation.import_from.components.UrlImportSheet
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_camera
@@ -59,6 +57,18 @@ import textlector.composeapp.generated.resources.ic_fb2
 import textlector.composeapp.generated.resources.ic_pdf_doc
 import textlector.composeapp.generated.resources.ic_text_doc
 import textlector.composeapp.generated.resources.ic_url
+import textlector.composeapp.generated.resources.import_analyzing
+import textlector.composeapp.generated.resources.import_analyzing_text
+import textlector.composeapp.generated.resources.import_from_camera
+import textlector.composeapp.generated.resources.import_from_url
+import textlector.composeapp.generated.resources.import_pages_progress
+import textlector.composeapp.generated.resources.import_process_button
+import textlector.composeapp.generated.resources.import_reading_pages
+import textlector.composeapp.generated.resources.import_section_files
+import textlector.composeapp.generated.resources.import_section_manual
+import textlector.composeapp.generated.resources.import_subtitle
+import textlector.composeapp.generated.resources.import_title
+import textlector.composeapp.generated.resources.made_by
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,6 +161,7 @@ fun ImportScreenRoot(
                 UrlImportSheet(
                     urlText = state.urlText,
                     isLoading = state.isLoading,
+                    urlError = state.urlError,
                     onUrlChange = { viewModel.onIntent(ImportIntent.EnterUrl(it)) },
                     onImport = { viewModel.onIntent(ImportIntent.ImportFromUrl) },
                     onDismiss = { viewModel.onIntent(ImportIntent.DismissUrlSheet) }
@@ -206,13 +217,13 @@ private fun ImportScreen(
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
 
             Text(
-                text = "Import",
+                text = stringResource(Res.string.import_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Bring your physical books and digital documents into your personal library.",
+                text = stringResource(Res.string.import_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -221,7 +232,7 @@ private fun ImportScreen(
 
             // Manual transcription
             Text(
-                text = "MANUAL TRANSCRIPTION",
+                text = stringResource(Res.string.import_section_manual),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -236,7 +247,7 @@ private fun ImportScreen(
 
             // Import Files
             Text(
-                text = "IMPORT FILES",
+                text = stringResource(Res.string.import_section_files),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -265,7 +276,7 @@ private fun ImportScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Reading ${progress.current} of ${progress.total} pages...",
+                            text = stringResource(Res.string.import_reading_pages, progress.current, progress.total),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -286,7 +297,7 @@ private fun ImportScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Analyzing text...",
+                            text = stringResource(Res.string.import_analyzing_text),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -309,13 +320,13 @@ private fun ImportScreen(
 
             // Camera - stub
             ImportRowItem(
-                title = "Import from URL",
+                title = stringResource(Res.string.import_from_url),
                 iconRes = Res.drawable.ic_url,
                 onClick = { onIntent(ImportIntent.OpenUrlSheet) }
             )
             Spacer(modifier = Modifier.height(8.dp))
             ImportRowItem(
-                title = "Scan via Camera",
+                title = stringResource(Res.string.import_from_camera),
                 iconRes = Res.drawable.ic_camera,
                 onClick = { onIntent(ImportIntent.OpenCamera) }
             )
@@ -341,7 +352,7 @@ private fun ImportScreen(
                 when (val progress = state.importProgress) {
                     is ImportProgress.Processing -> {
                         Text(
-                            text = "${progress.current}/${progress.total} pages",
+                            text = stringResource(Res.string.import_pages_progress,progress.current, progress.total),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
@@ -349,7 +360,7 @@ private fun ImportScreen(
 
                     is ImportProgress.Segmenting -> {
                         Text(
-                            text = "Analyzing...",
+                            text = stringResource(Res.string.import_analyzing),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
@@ -364,7 +375,7 @@ private fun ImportScreen(
                             )
                         } else {
                             Text(
-                                text = "Process Document",
+                                text = stringResource(Res.string.import_process_button),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White
                             )
@@ -375,7 +386,7 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "PROJECT WAS MADE BY @NEDMAH",
+                text = stringResource(Res.string.made_by),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),

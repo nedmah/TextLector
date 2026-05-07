@@ -3,6 +3,7 @@ package com.nedmah.textlector.ui.presentation.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import com.nedmah.textlector.ui.presentation.settings.components.FontSizeOption
 import com.nedmah.textlector.ui.presentation.settings.components.SettingsSection
 import com.nedmah.textlector.ui.presentation.settings.components.VoiceDownloadBanner
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_chevron_right
@@ -52,6 +54,23 @@ import textlector.composeapp.generated.resources.ic_female
 import textlector.composeapp.generated.resources.ic_language
 import textlector.composeapp.generated.resources.ic_male
 import textlector.composeapp.generated.resources.ic_success
+import textlector.composeapp.generated.resources.settings_dark_mode
+import textlector.composeapp.generated.resources.settings_engine_piper_subtitle
+import textlector.composeapp.generated.resources.settings_engine_piper_title
+import textlector.composeapp.generated.resources.settings_engine_subtitle
+import textlector.composeapp.generated.resources.settings_engine_system_subtitle
+import textlector.composeapp.generated.resources.settings_engine_system_title
+import textlector.composeapp.generated.resources.settings_engine_title
+import textlector.composeapp.generated.resources.settings_section_appearance
+import textlector.composeapp.generated.resources.settings_section_engine
+import textlector.composeapp.generated.resources.settings_section_font_size
+import textlector.composeapp.generated.resources.settings_section_playback_speed
+import textlector.composeapp.generated.resources.settings_section_voice
+import textlector.composeapp.generated.resources.settings_section_voice_language
+import textlector.composeapp.generated.resources.settings_title
+import textlector.composeapp.generated.resources.settings_voice_female
+import textlector.composeapp.generated.resources.settings_voice_language
+import textlector.composeapp.generated.resources.settings_voice_male
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,13 +100,13 @@ fun SettingsScreenRoot(
                     .padding(bottom = 32.dp)
             ) {
                 Text(
-                    text = "Audio Engine",
+                    text = stringResource(Res.string.settings_engine_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Choose the TTS engine for reading",
+                    text = stringResource(Res.string.settings_engine_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -95,8 +114,8 @@ fun SettingsScreenRoot(
 
                 // System TTS
                 EngineRow(
-                    title = "System TTS",
-                    subtitle = "Uses your device's built-in voice",
+                    title = stringResource(Res.string.settings_engine_system_title),
+                    subtitle = stringResource(Res.string.settings_engine_system_subtitle),
                     isSelected = !state.useSherpaEngine,
                     isAvailable = true,
                     onClick = {
@@ -109,8 +128,8 @@ fun SettingsScreenRoot(
 
                 // Piper
                 EngineRow(
-                    title = "Piper",
-                    subtitle = "High quality offline neural TTS",
+                    title = stringResource(Res.string.settings_engine_piper_title),
+                    subtitle = stringResource(Res.string.settings_engine_piper_subtitle),
                     isSelected = state.useSherpaEngine,
                     isAvailable = true,
                     onClick = {
@@ -143,7 +162,7 @@ private fun SettingsScreen(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Settings",
+            text = stringResource(Res.string.settings_title),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -151,9 +170,9 @@ private fun SettingsScreen(
 
 
         // Voice gender
-        SettingsSection(title = "VOICE PROFILE", trailing = {
+        SettingsSection(title = stringResource(Res.string.settings_section_voice), trailing = {
             Text(
-                text = "AUDIO ENGINE",
+                text = stringResource(Res.string.settings_section_engine),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -167,8 +186,8 @@ private fun SettingsScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 listOf(
-                    VoiceGender.MALE to "Male",
-                    VoiceGender.FEMALE to "Female"
+                    VoiceGender.MALE to stringResource(Res.string.settings_voice_male),
+                    VoiceGender.FEMALE to stringResource(Res.string.settings_voice_female)
                 ).forEach { (gender, label) ->
                     val isSelected = prefs.speechVoice == gender
                     Box(
@@ -222,7 +241,7 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Playback Speed
-        SettingsSection(title = "PLAYBACK SPEED") {
+        SettingsSection(title = stringResource(Res.string.settings_section_playback_speed)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -272,7 +291,7 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Font Size
-        SettingsSection(title = "READING FONT SIZE") {
+        SettingsSection(title = stringResource(Res.string.settings_section_font_size)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -291,7 +310,7 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Language
-        SettingsSection(title = "VOICE LANGUAGE") {
+        SettingsSection(title = stringResource(Res.string.settings_section_voice_language)) {
             var expanded by remember { mutableStateOf(false) }
             val currentLabel = when (prefs.language) {
                 "ru" -> "Русский"
@@ -322,7 +341,7 @@ private fun SettingsScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = "Voice Language",
+                            text = stringResource(Res.string.settings_voice_language),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -378,19 +397,19 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Dark Mode
-        SettingsSection(title = "APPEARANCE") {
+        SettingsSection(title = stringResource(Res.string.settings_section_appearance)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Dark Mode",
+                    text = stringResource(Res.string.settings_dark_mode),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Switch(
-                    checked = prefs.isDarkMode,
+                    checked = prefs.isDarkMode ?: isSystemInDarkTheme(),
                     onCheckedChange = { onIntent(SettingsIntent.SetDarkMode(it)) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,

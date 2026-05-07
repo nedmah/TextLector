@@ -21,11 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.import_from_url
 
 @Composable
 fun UrlImportSheet(
     urlText: String,
     isLoading: Boolean,
+    urlError: String?,
     onUrlChange: (String) -> Unit,
     onImport: () -> Unit,
     onDismiss: () -> Unit
@@ -37,7 +41,7 @@ fun UrlImportSheet(
             .padding(bottom = 32.dp)
     ) {
         Text(
-            text = "Import from URL",
+            text = stringResource(Res.string.import_from_url),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -53,6 +57,16 @@ fun UrlImportSheet(
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            isError = urlError != null,
+            supportingText = {
+                if (urlError != null) {
+                    Text(
+                        text = urlError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Uri,
                 imeAction = ImeAction.Done
@@ -62,7 +76,9 @@ fun UrlImportSheet(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+                errorContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                errorIndicatorColor = Color.Transparent,
             ),
             shape = RoundedCornerShape(12.dp)
         )

@@ -2,7 +2,6 @@ package com.nedmah.textlector.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.data.db.toDbString
@@ -16,7 +15,6 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlin.collections.map
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 

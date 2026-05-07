@@ -1,8 +1,10 @@
 package com.nedmah.textlector
 
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.nedmah.textlector.common.navigation.TextLectorNavGraph
 import com.nedmah.textlector.ui.presentation.settings.SettingsViewModel
@@ -15,7 +17,10 @@ fun App() {
     val settingsViewModel = koinViewModel<SettingsViewModel>()
     val settingsState by settingsViewModel.state.collectAsState()
 
-    LectorTheme(isDarkMode = settingsState.preferences.isDarkMode) {
+    val systemDarkTheme = isSystemInDarkTheme()
+    val isDarkMode = settingsState.preferences.isDarkMode ?: systemDarkTheme
+
+    LectorTheme(isDarkMode = isDarkMode) {
         TextLectorNavGraph()
     }
 }

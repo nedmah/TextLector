@@ -44,6 +44,8 @@ fun PlayerControls(
     isLoading : Boolean,
     elapsed: String,
     remaining: String,
+    canGoPrevious: Boolean,
+    canGoNext: Boolean,
     onPlay: () -> Unit,
     onPause: () -> Unit,
     onNext: () -> Unit,
@@ -103,11 +105,17 @@ fun PlayerControls(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    IconButton(onClick = onPrevious) {
+                    IconButton(
+                        onClick = onPrevious,
+                        enabled = canGoPrevious && isEnabled
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_skip_prev),
                             contentDescription = "Previous",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = if (canGoPrevious && isEnabled)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -139,11 +147,17 @@ fun PlayerControls(
                         )
                     }
 
-                    IconButton(onClick = onNext) {
+                    IconButton(
+                        onClick = onNext,
+                        enabled = canGoNext && isEnabled
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_skip_next),
                             contentDescription = "Next",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = if (canGoNext && isEnabled)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -158,11 +172,12 @@ fun PlayerControls(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerProgressBar(
+private fun PlayerProgressBar(
     progress: Float,
     onSeek: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
     Slider(
         value = progress,
         onValueChange = onSeek,

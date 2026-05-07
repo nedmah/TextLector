@@ -1,0 +1,81 @@
+<resources>
+    <!-- Common -->
+    <string name="action_cancel">Отмена</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_retry">Повторить</string>
+    <string name="action_download">Скачать</string>
+    <string name="action_see_all">все</string>
+    <string name="app_name">TextLector</string>
+    <string name="made_by">ПРОЕКТ СОЗДАН @NEDMAH</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_library">Библиотека</string>
+    <string name="nav_import">Импорт</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Library -->
+    <string name="library_title">Библиотека</string>
+    <string name="library_favorite_docs">Избранное</string>
+    <string name="library_recent_docs">Недавние документы</string>
+    <string name="library_sort_last_opened">Последнее открытие</string>
+    <string name="library_sort_date_added">Дата добавления</string>
+    <plurals name="library_collection_size">
+        <item quantity="one">%1$d документ в коллекции</item>
+        <item quantity="few">%1$d документа в коллекции</item>
+        <item quantity="many">%1$d документов в коллекции</item>
+        <item quantity="other">%1$d документа в коллекции</item>
+    </plurals>
+    <string name="library_reading_time">%1$dм</string>
+
+    <!-- Import -->
+    <string name="import_title">Импорт</string>
+    <string name="import_subtitle">Добавляйте физические книги и цифровые документы в свою личную библиотеку.</string>
+    <string name="import_section_manual">РУЧНОЙ ВВОД</string>
+    <string name="import_section_files">ИМПОРТ ФАЙЛОВ</string>
+    <string name="import_manual_placeholder">Заголовок\nВставьте или введите текст здесь...</string>
+    <string name="import_process_button">Обработать документ</string>
+    <string name="import_analyzing">Анализирую...</string>
+    <string name="import_analyzing_text">Анализирую текст...</string>
+    <string name="import_reading_pages">Читаю %1$d из %2$d страниц...</string>
+    <string name="import_pages_progress">%1$d/%2$d страниц</string>
+    <string name="import_from_url">Импорт по ссылке</string>
+    <string name="import_from_camera">Отсканировать с помощью камеры</string>
+
+    <!-- Import Success Sheet -->
+    <string name="import_success_title">Импорт успешен</string>
+    <string name="import_success_ready">ГОТОВО К ДОБАВЛЕНИЮ</string>
+    <string name="import_success_word_count">КОЛИЧЕСТВО СЛОВ</string>
+    <string name="import_success_reading_time">ВРЕМЯ ЧТЕНИЯ</string>
+    <string name="import_success_reading_minutes">%1$d мин</string>
+    <string name="import_success_add">Добавить в библиотеку</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_voice">ГОЛОС</string>
+    <string name="settings_section_engine">ДВИЖОК</string>
+    <string name="settings_section_language">ЯЗЫК ГОЛОСА</string>
+    <string name="settings_section_appearance">ВНЕШНИЙ ВИД</string>
+    <string name="settings_section_playback_speed">СКОРОСТЬ ЧТЕНИЯ</string>
+    <string name="settings_section_font_size">РАЗМЕР ШРИФТА</string>
+    <string name="settings_section_voice_language">ЯЗЫК ЧТЕНИЯ</string>
+    <string name="settings_dark_mode">Тёмная тема</string>
+    <string name="settings_engine_title">Аудио движок</string>
+    <string name="settings_engine_subtitle">Выберите TTS движок для чтения</string>
+    <string name="settings_engine_system_title">Системный TTS</string>
+    <string name="settings_engine_system_subtitle">Использует встроенный голос устройства</string>
+    <string name="settings_engine_piper_title">Piper</string>
+    <string name="settings_engine_piper_subtitle">Высококачественный офлайн нейронный TTS</string>
+    <string name="settings_voice_language">Язык чтения</string>
+    <string name="settings_voice_male">Мужской</string>
+    <string name="settings_voice_female">Женский</string>
+
+    <!-- Voice Model -->
+    <string name="voice_model_ready">Голосовая модель готова</string>
+    <string name="voice_model_not_downloaded">Голосовая модель не скачана</string>
+    <string name="voice_model_downloading">Загрузка... %1$d%%</string>
+    <string name="voice_model_download_failed">Ошибка загрузки</string>
+
+    <!-- Delete Dialog -->
+    <string name="delete_dialog_title">Удалить документ?</string>
+    <string name="delete_dialog_message">Это действие нельзя отменить.</string>
+</resources>

@@ -9,7 +9,7 @@ data class SettingsState(
         speechSpeed = 1f,
         speechVoice = VoiceGender.MALE,
         fontSize = 16,
-        isDarkMode = false,
+        isDarkMode = null,
         language = "en"
     ),
     val useSherpaEngine: Boolean = false,

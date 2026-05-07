@@ -16,16 +16,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,10 +43,19 @@ import com.nedmah.textlector.ui.presentation.library.components.FavoriteDocItem
 import com.nedmah.textlector.ui.presentation.library.components.LibrarySkeletonScreen
 import com.nedmah.textlector.ui.presentation.library.components.SwipeableDocItem
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.action_see_all
 import textlector.composeapp.generated.resources.ic_sort
 import textlector.composeapp.generated.resources.ic_success
+import textlector.composeapp.generated.resources.library_collection_size
+import textlector.composeapp.generated.resources.library_favorite_docs
+import textlector.composeapp.generated.resources.library_recent_docs
+import textlector.composeapp.generated.resources.library_sort_date_added
+import textlector.composeapp.generated.resources.library_sort_last_opened
+import textlector.composeapp.generated.resources.library_title
 
 @Composable
 fun LibraryScreenRoot(
@@ -50,15 +65,21 @@ fun LibraryScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { eff ->
             when (eff) {
                 is LibraryEffect.NavigateToReader -> onNavigateToReader(eff.documentId)
                 is LibraryEffect.NavigateToImport -> onNavigateToImport()
-                is LibraryEffect.ShowError -> { /* Snackbar */ }
-
-                LibraryEffect.DocumentDeleted -> { /* Snackbar */
+                is LibraryEffect.ShowError -> {
+                    snackbarHostState.showSnackbar(
+                        message = eff.message,
+                        duration = SnackbarDuration.Short
+                    )
                 }
+
             }
         }
     }
@@ -69,6 +90,11 @@ fun LibraryScreenRoot(
         } else {
             LibraryScreen(state = state, onIntent = viewModel::onEvent)
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -91,13 +117,13 @@ private fun LibraryScreen(
         item {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Text(
-                    text = "Library",
+                    text = stringResource(Res.string.library_title),
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${state.recentDocs.size} items in your collection",
+                    text = pluralStringResource(Res.plurals.library_collection_size, state.recentDocs.size, state.recentDocs.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -109,11 +135,11 @@ private fun LibraryScreen(
             item {
                 Spacer(modifier = Modifier.height(28.dp))
                 SectionHeader(
-                    title = "Favorites",
+                    title = stringResource(Res.string.library_favorite_docs),
                     onAction = { /* navigation */ },
                     trailingContent = {
                         Text(
-                            text = "see all",
+                            text = stringResource(Res.string.action_see_all),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -135,7 +161,8 @@ private fun LibraryScreen(
                             },
                             onToggleFavorite = {
                                 onIntent(LibraryIntent.ToggleFavorite(document.id, false))
-                            }
+                            },
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }
@@ -149,7 +176,7 @@ private fun LibraryScreen(
             var sortMenuExpanded by remember { mutableStateOf(false) }
 
             SectionHeader(
-                title = "Recent Documents",
+                title = stringResource(Res.string.library_recent_docs),
                 onAction = null,
                 trailingContent = {
                     Box {
@@ -163,7 +190,7 @@ private fun LibraryScreen(
                             onDismissRequest = { sortMenuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Last Opened") },
+                                text = { stringResource(Res.string.library_sort_last_opened) },
                                 onClick = {
                                     onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.LAST_OPENED))
                                     sortMenuExpanded = false
@@ -180,7 +207,7 @@ private fun LibraryScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("Date Added") },
+                                text = { stringResource(Res.string.library_sort_date_added) },
                                 onClick = {
                                     onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.CREATED_AT))
                                     sortMenuExpanded = false
@@ -210,14 +237,33 @@ private fun LibraryScreen(
             SwipeableDocItem(
                 document = document,
                 onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
-                onDelete = { onIntent(LibraryIntent.DeleteDocument(document.id)) },
+                onDelete = { onIntent(LibraryIntent.RequestDelete(document.id)) },
                 onFavorite = {
                     onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
-                }
+                },
+                modifier = Modifier.animateItem()
             )
         }
     }
 
+
+    state.pendingDeleteDocumentId?.let {
+        AlertDialog(
+            onDismissRequest = { onIntent(LibraryIntent.CancelDelete) },
+            title = { Text("Delete document?") },
+            text = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { onIntent(LibraryIntent.ConfirmDelete) }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(LibraryIntent.CancelDelete) }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable

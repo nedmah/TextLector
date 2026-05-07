@@ -1,7 +1,6 @@
 package com.nedmah.textlector.ui.presentation.library.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,11 +31,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
 import textlector.composeapp.generated.resources.ic_delete
 import textlector.composeapp.generated.resources.ic_star_empty
 import textlector.composeapp.generated.resources.ic_star_filled
 import textlector.composeapp.generated.resources.ic_success
+import textlector.composeapp.generated.resources.library_reading_time
 
 
 @Composable
@@ -44,9 +45,9 @@ fun SwipeableDocItem(
     document: Document,
     onDelete: () -> Unit,
     onFavorite: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-
 
     val dismissState = rememberSwipeToDismissBoxState()
 
@@ -54,6 +55,7 @@ fun SwipeableDocItem(
         when (dismissState.currentValue) {
             SwipeToDismissBoxValue.EndToStart -> {
                 onDelete()
+                dismissState.snapTo(SwipeToDismissBoxValue.Settled)
             }
             SwipeToDismissBoxValue.StartToEnd -> {
                 onFavorite()
@@ -65,6 +67,7 @@ fun SwipeableDocItem(
 
     SwipeToDismissBox(
         state = dismissState,
+        modifier = modifier,
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = true,
         backgroundContent = {
@@ -144,9 +147,9 @@ private fun RecentDocItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 6.dp)
-            .clickable { onClick() },
+            .padding(horizontal = 20.dp, vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
+        onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -171,7 +174,7 @@ private fun RecentDocItem(
                 }
 
                 Text(
-                    text = "${document.estimatedReadingMinutes}m",
+                    text = stringResource(Res.string.library_reading_time, document.estimatedReadingMinutes),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

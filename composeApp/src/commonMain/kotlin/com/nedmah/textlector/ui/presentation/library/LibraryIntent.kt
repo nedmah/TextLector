@@ -3,8 +3,6 @@ package com.nedmah.textlector.ui.presentation.library
 import com.nedmah.textlector.domain.model.DocumentSortOrder
 
 sealed interface LibraryIntent {
-    data class DeleteDocument(val id: String) :
-        com.nedmah.textlector.ui.presentation.library.LibraryIntent
     data class ToggleFavorite(val id: String, val isFavorite: Boolean) :
         com.nedmah.textlector.ui.presentation.library.LibraryIntent
     data class SearchDocuments(val query: String) :
@@ -14,4 +12,8 @@ sealed interface LibraryIntent {
     data object OpenImport : com.nedmah.textlector.ui.presentation.library.LibraryIntent
 
     data class ChangeSortType(val sortOrder: DocumentSortOrder) : LibraryIntent
+
+    data class RequestDelete(val id: String) : LibraryIntent
+    data object ConfirmDelete : LibraryIntent
+    data object CancelDelete : LibraryIntent
 }
