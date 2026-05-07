@@ -2,6 +2,8 @@ package com.nedmah.textlector.di
 
 import android.content.Context
 import com.nedmah.textlector.common.platform.file.FileReader
+import com.nedmah.textlector.common.platform.ocr.AndroidOcrEngine
+import com.nedmah.textlector.common.platform.ocr.OcrEngine
 import com.nedmah.textlector.common.platform.tts.AndroidSherpaOnnxTtsEngine
 import com.nedmah.textlector.common.platform.tts.AndroidTtsEngine
 import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
@@ -23,6 +25,7 @@ actual val platformModule = module {
     }
 
     single { FileReader(androidContext()) }
+    single<OcrEngine> { AndroidOcrEngine(get()) }
 
     // repository
     single<VoiceModelRepository> { AndroidVoiceModelRepositoryImpl(androidContext()) }

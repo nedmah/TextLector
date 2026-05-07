@@ -2,13 +2,18 @@ package com.nedmah.textlector.ui.presentation.import_from
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nedmah.textlector.common.platform.ocr.OcrEngine
 import com.nedmah.textlector.data.source.UrlContentFetcher
 import com.nedmah.textlector.domain.model.ImportProgress
+import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.SourceType
+import com.nedmah.textlector.domain.repository.OcrDataRepository
+import com.nedmah.textlector.domain.usecase.DownloadOcrDataUseCase
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
 import com.nedmah.textlector.ui.presentation.import_from.ImportEffect.ShowError
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +25,10 @@ class ImportViewModel(
     private val inputTextManuallyUseCase: InputTextManuallyUseCase,
     private val importDocumentUseCase: ImportDocumentUseCase,
     private val saveDocumentUseCase: SaveDocumentUseCase,
-    private val urlContentFetcher: UrlContentFetcher
+    private val urlContentFetcher: UrlContentFetcher,
+    private val ocrEngine: OcrEngine,
+    private val ocrDataRepository: OcrDataRepository,
+    private val downloadOcrDataUseCase: DownloadOcrDataUseCase
 ) : ViewModel() {
 
     private val _state =
@@ -30,6 +38,12 @@ class ImportViewModel(
     private val _effect =
         Channel<ImportEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
+
+    private var downloadJob: Job? = null
+
+    init {
+        observeOcrDataState()
+    }
 
     fun onIntent(intent: ImportIntent) {
         when (intent) {
@@ -52,10 +66,41 @@ class ImportViewModel(
             ImportIntent.DismissImport -> dismissImport()
 
             ImportIntent.OpenUrlSheet -> _state.update { it.copy(showUrlSheet = true) }
-            ImportIntent.DismissUrlSheet -> _state.update { it.copy(showUrlSheet = false, urlText = "") }
+            ImportIntent.DismissUrlSheet -> _state.update {
+                it.copy(
+                    showUrlSheet = false,
+                    urlText = ""
+                )
+            }
 
             is ImportIntent.EnterUrl -> _state.update { it.copy(urlText = intent.url) }
             ImportIntent.ImportFromUrl -> importFromUrl()
+
+            ImportIntent.OpenCamera -> {
+                if (ocrDataRepository.isReady())
+                    _state.update { it.copy(shouldLaunchCamera = true) }
+            }
+
+            ImportIntent.CameraLaunched ->
+                _state.update { it.copy(shouldLaunchCamera = false) }
+
+            is ImportIntent.CameraImageCaptured -> processOcrImage(intent.uri)
+
+            ImportIntent.DownloadOcrData -> downloadOcrData()
+
+            ImportIntent.DismissOcrDialog -> {}
+        }
+    }
+
+    private fun observeOcrDataState() {
+        viewModelScope.launch {
+            ocrDataRepository.getState().collect { modelState ->
+                _state.update { it.copy(ocrDataState = modelState) }
+
+                if (modelState is ModelState.Ready && _state.value.showOcrDownloadDialog) {
+                    _state.update { it.copy(shouldLaunchCamera = true) }
+                }
+            }
         }
     }
 
@@ -126,10 +171,11 @@ class ImportViewModel(
             _state.update { it.copy(isLoading = true, importProgress = null) }
             importDocumentUseCase(uri, title, sourceType)
                 .collect { progress ->
-                    when(progress){
+                    when (progress) {
                         is ImportProgress.Processing -> {
                             _state.update { it.copy(importProgress = progress) }
                         }
+
                         is ImportProgress.Success -> {
                             _state.update {
                                 it.copy(
@@ -139,6 +185,7 @@ class ImportViewModel(
                                 )
                             }
                         }
+
                         is ImportProgress.Error -> {
                             _state.update { it.copy(isLoading = false, importProgress = null) }
                             _effect.send(ShowError(progress.message))
@@ -182,6 +229,45 @@ class ImportViewModel(
                 .onFailure { error ->
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(ShowError(error.message ?: "Failed to fetch URL"))
+                }
+        }
+    }
+
+    private fun downloadOcrData() {
+        if (downloadJob?.isActive == true) return
+        downloadJob = viewModelScope.launch {
+            downloadOcrDataUseCase().collect { state ->
+                _state.update { it.copy(ocrDataState = state) }
+            }
+        }
+    }
+
+    private fun processOcrImage(uri: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            ocrEngine.recognize(uri)
+                .onSuccess { text ->
+                    val title = text.lines()
+                        .firstOrNull { it.isNotBlank() }
+                        ?.trim()
+                        ?.take(50)
+                        ?: "Camera scan"
+
+                    inputTextManuallyUseCase(title, text)
+                        .onSuccess { document ->
+                            _state.update {
+                                it.copy(isLoading = false, processedDocument = document)
+                            }
+                        }
+                        .onFailure { e ->
+                            _state.update { it.copy(isLoading = false) }
+                            _effect.send(ImportEffect.ShowError(e.message ?: "Processing failed"))
+                        }
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(isLoading = false) }
+                    _effect.send(ImportEffect.ShowError(e.message ?: "OCR failed"))
                 }
         }
     }

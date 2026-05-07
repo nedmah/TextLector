@@ -24,6 +24,7 @@ sherpaOnnx = "1.12.34"
 sqldelight = "2.0.2"
 navigation = "2.9.0-beta01"
 okio = "3.9.0"
+tesseract4android = "4.9.0"
 uuid = "0.8.4"
 pdfbox-android = "2.0.27.0"
 pdfbox-jvm = "2.0.27"
@@ -33,6 +34,7 @@ ksoup = "0.2.6"
 google-services = "4.4.2"
 firebase-crashlytics-plugin = "3.0.3"
 firebase-bom = "33.13.0"
+mlkit-text = "16.0.1"
 
 [libraries]
 commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
@@ -101,6 +103,10 @@ ksoup-network = { module = "com.fleeksoft.ksoup:ksoup-network", version.ref = "k
 # firebase
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
+
+# ml recognition
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
+tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android", version.ref = "tesseract4android" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 

@@ -57,6 +57,7 @@ kotlin {
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.13.0"))
             implementation(libs.firebase.crashlytics)
             implementation(libs.firebase.analytics)
+            implementation(libs.tesseract4android)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
