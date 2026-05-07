@@ -12,6 +12,7 @@ import com.nedmah.textlector.domain.repository.DocumentRepository
 import com.nedmah.textlector.domain.repository.ParagraphRepository
 import com.nedmah.textlector.domain.repository.PreferencesRepository
 import com.nedmah.textlector.domain.usecase.DeleteDocumentUseCase
+import com.nedmah.textlector.domain.usecase.DownloadOcrDataUseCase
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.GetFavoritesUseCase
@@ -69,6 +70,7 @@ val dataModule = module {
     factory { GetVoiceModelsUseCase(get()) }
     factory { DownloadVoiceModelUseCase(get()) }
     factory { DeleteVoiceModelUseCase(get()) }
+    factory { DownloadOcrDataUseCase(get()) }
 
     // ViewModels
     single {
@@ -98,6 +100,8 @@ val dataModule = module {
     }
     factory {
         ImportViewModel(
+            get(),
+            get(),
             get(),
             get(),
             get(),

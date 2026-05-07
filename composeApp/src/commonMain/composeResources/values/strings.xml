@@ -47,6 +47,14 @@
     <string name="import_success_reading_minutes">%1$d min</string>
     <string name="import_success_add">Add to Library</string>
 
+    <!-- Import Ocr Dialog -->
+    <string name="import_ocr_download_failed">Download failed</string>
+    <string name="import_ocr_title">This is a test feature</string>
+    <string name="import_ocr_subtitle">It may not work well. If you agree, to scan text with your camera, recognition data needs to be downloaded (~20 MB).</string>
+    <string name="import_ocr_downloading">Downloading recognition data...</string>
+    <string name="import_ocr_download_error">Failed to download: %1$s</string>
+    <string name="import_ocr_download">Download (~20 MB)</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_voice">VOICE PROFILE</string>

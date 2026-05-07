@@ -46,6 +46,7 @@ import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportSuccessSheet
 import com.nedmah.textlector.ui.presentation.import_from.components.ManualTextInput
+import com.nedmah.textlector.ui.presentation.import_from.components.OcrDownloadDialog
 import com.nedmah.textlector.ui.presentation.import_from.components.UrlImportSheet
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -169,6 +170,13 @@ fun ImportScreenRoot(
             }
         }
 
+        if (state.showOcrDownloadDialog) {
+            OcrDownloadDialog(
+                state = state.ocrDataState,
+                onDownload = { viewModel.onIntent(ImportIntent.DownloadOcrData) },
+                onDismiss = { viewModel.onIntent(ImportIntent.DismissOcrDialog) }
+            )
+        }
     }
 }
 
@@ -318,7 +326,7 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Camera - stub
+            // Url and camera
             ImportRowItem(
                 title = stringResource(Res.string.import_from_url),
                 iconRes = Res.drawable.ic_url,

@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 class DownloadOcrDataUseCase(
     private val repository: OcrDataRepository
 ) {
-    operator fun invoke(): Flow<ModelState> = repository.download()
+    suspend operator fun invoke(): Flow<ModelState> = repository.download()
 }

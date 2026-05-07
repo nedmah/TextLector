@@ -14,10 +14,7 @@ data class ImportState(
     val importProgress: ImportProgress? = null,
     val processedDocument: ProcessedDocument? = null,
     val shouldLaunchCamera: Boolean = false,
+    val showOcrDownloadDialog: Boolean = false,
     val ocrDataState: ModelState = ModelState.NotDownloaded,
 ) {
-    val showOcrDownloadDialog: Boolean
-        get() = ocrDataState is ModelState.NotDownloaded ||
-                ocrDataState is ModelState.Downloading ||
-                ocrDataState is ModelState.Error
 }

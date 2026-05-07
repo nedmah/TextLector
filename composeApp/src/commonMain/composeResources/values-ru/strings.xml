@@ -49,6 +49,14 @@
     <string name="import_success_reading_minutes">%1$d мин</string>
     <string name="import_success_add">Добавить в библиотеку</string>
 
+    <!-- Import Ocr Dialog -->
+    <string name="import_ocr_download_failed">Сбой загрузки</string>
+    <string name="import_ocr_title">Это тестовая функция</string>
+    <string name="import_ocr_subtitle">Она может плохо работать. Если вы согласны, для сканирования текста камерой необходимо загрузить данные распознавания (~20 МБ).</string>
+    <string name="import_ocr_downloading">Загрузка данных распознавания...</string>
+    <string name="import_ocr_download_error">Не удалось загрузить: %1$s</string>
+    <string name="import_ocr_download">Загрузка (~20 МБ)</string>
+
     <!-- Settings -->
     <string name="settings_title">Настройки</string>
     <string name="settings_section_voice">ГОЛОС</string>

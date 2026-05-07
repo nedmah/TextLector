@@ -81,6 +81,8 @@ class ImportViewModel(
             ImportIntent.OpenCamera -> {
                 if (ocrDataRepository.isReady())
                     _state.update { it.copy(shouldLaunchCamera = true) }
+                else
+                    _state.update { it.copy(showOcrDownloadDialog = true) }
             }
 
             ImportIntent.CameraLaunched ->
@@ -90,7 +92,7 @@ class ImportViewModel(
 
             ImportIntent.DownloadOcrData -> downloadOcrData()
 
-            ImportIntent.DismissOcrDialog -> {}
+            ImportIntent.DismissOcrDialog -> _state.update { it.copy(showOcrDownloadDialog = false) }
         }
     }
 
@@ -100,7 +102,7 @@ class ImportViewModel(
                 _state.update { it.copy(ocrDataState = modelState) }
 
                 if (modelState is ModelState.Ready && _state.value.showOcrDownloadDialog) {
-                    _state.update { it.copy(shouldLaunchCamera = true) }
+                    _state.update { it.copy(showOcrDownloadDialog = false, shouldLaunchCamera = true) }
                 }
             }
         }

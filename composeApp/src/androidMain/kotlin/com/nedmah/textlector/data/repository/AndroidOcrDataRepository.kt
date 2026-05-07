@@ -21,9 +21,9 @@ class AndroidOcrDataRepository(
 
     companion object {
         private const val ENG_URL =
-            "https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.traineddata"
+            "https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata"
         private const val RUS_URL =
-            "https://github.com/tesseract-ocr/tessdata_fast/raw/main/rus.traineddata"
+            "https://github.com/tesseract-ocr/tessdata_best/raw/main/rus.traineddata"
         private const val ENG_FILE = "eng.traineddata"
         private const val RUS_FILE = "rus.traineddata"
     }
@@ -78,11 +78,31 @@ class AndroidOcrDataRepository(
         if (isReady()) ModelState.Ready else ModelState.NotDownloaded
 
     private fun downloadFile(url: String, dest: File): Flow<Float> = flow {
-        val connection = URL(url).openConnection() as HttpURLConnection
+        var currentUrl = url
+        var connection: HttpURLConnection? = null
+
         try {
-            connection.connect()
+            while (true) {
+                connection = URL(currentUrl).openConnection() as HttpURLConnection
+                connection.instanceFollowRedirects = false
+                connection.connect()
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_MOVED_PERM ||
+                    responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
+                    responseCode == 307 || responseCode == 308
+                ) {
+                    val location = connection.getHeaderField("Location")
+                    currentUrl = URL(URL(currentUrl), location).toExternalForm()
+                    connection.disconnect()
+                    connection = null
+                    continue
+                }
+                break
+            }
 
             val total = connection.contentLengthLong
+
             var downloaded = 0L
 
             connection.inputStream.use { input ->
@@ -98,7 +118,7 @@ class AndroidOcrDataRepository(
                 }
             }
         } finally {
-            connection.disconnect()
+            connection?.disconnect()
         }
     }.flowOn(Dispatchers.IO)
 

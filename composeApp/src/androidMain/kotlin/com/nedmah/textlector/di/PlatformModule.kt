@@ -9,7 +9,9 @@ import com.nedmah.textlector.common.platform.tts.AndroidTtsEngine
 import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
+import com.nedmah.textlector.data.repository.AndroidOcrDataRepository
 import com.nedmah.textlector.data.repository.AndroidVoiceModelRepositoryImpl
+import com.nedmah.textlector.domain.repository.OcrDataRepository
 import com.nedmah.textlector.domain.repository.VoiceModelRepository
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SharedPreferencesSettings
@@ -25,9 +27,10 @@ actual val platformModule = module {
     }
 
     single { FileReader(androidContext()) }
-    single<OcrEngine> { AndroidOcrEngine(get()) }
+    single<OcrEngine> { AndroidOcrEngine(get(), get(), get()) }
 
     // repository
+    single<OcrDataRepository> { AndroidOcrDataRepository(get()) }
     single<VoiceModelRepository> { AndroidVoiceModelRepositoryImpl(androidContext()) }
 
     // TTS engines

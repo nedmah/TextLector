@@ -16,6 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.ModelState
+import org.jetbrains.compose.resources.stringResource
+import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.action_retry
+import textlector.composeapp.generated.resources.import_ocr_download
+import textlector.composeapp.generated.resources.import_ocr_download_error
+import textlector.composeapp.generated.resources.import_ocr_download_failed
+import textlector.composeapp.generated.resources.import_ocr_downloading
+import textlector.composeapp.generated.resources.import_ocr_subtitle
+import textlector.composeapp.generated.resources.import_ocr_title
 
 @Composable
 fun OcrDownloadDialog(
@@ -31,8 +40,8 @@ fun OcrDownloadDialog(
         title = {
             Text(
                 text = when (state) {
-                    is ModelState.Error -> "Download failed"
-                    else -> "Camera scanning"
+                    is ModelState.Error -> stringResource(Res.string.import_ocr_download_failed)
+                    else -> stringResource(Res.string.import_ocr_title)
                 },
                 style = MaterialTheme.typography.headlineSmall
             )
@@ -42,11 +51,14 @@ fun OcrDownloadDialog(
                 Text(
                     text = when (state) {
                         is ModelState.NotDownloaded ->
-                            "To scan text with your camera, recognition data needs to be downloaded (~20 MB)."
+                            stringResource(Res.string.import_ocr_subtitle)
+
                         is ModelState.Downloading ->
-                            "Downloading recognition data..."
+                            stringResource(Res.string.import_ocr_downloading)
+
                         is ModelState.Error ->
-                            "Failed to download: ${state.message}"
+                            stringResource(Res.string.import_ocr_download_error, state.message)
+
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -77,7 +89,8 @@ fun OcrDownloadDialog(
             if (state !is ModelState.Downloading) {
                 Button(onClick = onDownload) {
                     Text(
-                        text = if (state is ModelState.Error) "Retry" else "Download (~20 MB)"
+                        text = if (state is ModelState.Error) stringResource(Res.string.action_retry)
+                        else stringResource(Res.string.import_ocr_download)
                     )
                 }
             }
