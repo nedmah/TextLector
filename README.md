@@ -1,5 +1,11 @@
 # TextLector
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green.svg)]()
+[![Offline](https://img.shields.io/badge/Offline-100%25-brightgreen)]()
+[![Latest Release](https://img.shields.io/github/v/release/nedmah/TextLector)](https://github.com/nedmah/TextLector/releases)
+
 A free, offline text-to-speech reader for Android and iOS, built with Kotlin Multiplatform and Compose Multiplatform.
 
 > Open-source alternative to Speechify — no subscriptions, no internet required, no data leaves your device.
@@ -132,4 +138,4 @@ Open `iosApp/iosApp.xcodeproj` in Xcode and run on a simulator or device.
 
 ## License
 
-MIT
+[<image-card alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" ></image-card>](https://opensource.org/licenses/Apache-2.0)
