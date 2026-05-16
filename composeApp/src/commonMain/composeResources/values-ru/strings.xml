@@ -1,9 +1,11 @@
 <resources>
     <!-- Common -->
     <string name="action_cancel">Отмена</string>
+    <string name="action_confirm">Сохранить</string>
     <string name="action_delete">Удалить</string>
     <string name="action_retry">Повторить</string>
     <string name="action_download">Скачать</string>
+    <string name="action_rename">Переименовать</string>
     <string name="action_see_all">все</string>
     <string name="app_name">TextLector</string>
     <string name="made_by">ПРОЕКТ СОЗДАН @NEDMAH</string>
@@ -26,6 +28,7 @@
         <item quantity="other">%1$d документа в коллекции</item>
     </plurals>
     <string name="library_reading_time">%1$dм</string>
+    <string name="library_dialog_new_name">Введите новое название</string>
 
     <!-- Import -->
     <string name="import_title">Импорт</string>
@@ -48,6 +51,14 @@
     <string name="import_success_reading_time">ВРЕМЯ ЧТЕНИЯ</string>
     <string name="import_success_reading_minutes">%1$d мин</string>
     <string name="import_success_add">Добавить в библиотеку</string>
+
+    <!-- Import Ocr Dialog -->
+    <string name="import_ocr_download_failed">Сбой загрузки</string>
+    <string name="import_ocr_title">Это тестовая функция</string>
+    <string name="import_ocr_subtitle">Она может плохо работать. Если вы согласны, для сканирования текста камерой необходимо загрузить данные распознавания (~20 МБ).</string>
+    <string name="import_ocr_downloading">Загрузка данных распознавания...</string>
+    <string name="import_ocr_download_error">Не удалось загрузить: %1$s</string>
+    <string name="import_ocr_download">Загрузка (~20 МБ)</string>
 
     <!-- Settings -->
     <string name="settings_title">Настройки</string>

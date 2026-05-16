@@ -16,4 +16,5 @@ interface DocumentRepository {
     suspend fun toggleFavorite(id: String, isFavorite: Boolean): Result<Unit>
     suspend fun updateLastOpened(id: String)
     suspend fun updateReadingProgress(id: String, paragraphIndex: Int)
+    suspend fun updateTitle(id: String, title: String): Result<Unit>
 }

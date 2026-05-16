@@ -12,6 +12,7 @@ import com.nedmah.textlector.domain.repository.DocumentRepository
 import com.nedmah.textlector.domain.repository.ParagraphRepository
 import com.nedmah.textlector.domain.repository.PreferencesRepository
 import com.nedmah.textlector.domain.usecase.DeleteDocumentUseCase
+import com.nedmah.textlector.domain.usecase.DownloadOcrDataUseCase
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.GetFavoritesUseCase
@@ -20,6 +21,7 @@ import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.GetRecentDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
+import com.nedmah.textlector.domain.usecase.RenameDocumentUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
 import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
@@ -69,19 +71,15 @@ val dataModule = module {
     factory { GetVoiceModelsUseCase(get()) }
     factory { DownloadVoiceModelUseCase(get()) }
     factory { DeleteVoiceModelUseCase(get()) }
+    factory { DownloadOcrDataUseCase(get()) }
+    factory { RenameDocumentUseCase(get()) }
 
     // ViewModels
     single {
         val engine = get<TtsEngine>()
         val isBuffering = (engine as SwitchableTtsEngine).isBuffering
         PlayerViewModel(
-            get(),
-            get(),
-            get(),
-            get(),
-            get(),
-            get<TtsEngine>(),
-            isBuffering
+            get(), get(), get(), get(), get(), get<TtsEngine>(), isBuffering
         )
     }
     viewModel {
@@ -91,10 +89,37 @@ val dataModule = module {
             get(),
             get(),
             get(),
+            get(),
             get()
         )
     }
-    factory { ReaderViewModel(get(), get(), get(), get()) }
-    factory { ImportViewModel(get(), get(), get(), get()) }
-    factory { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    factory {
+        ReaderViewModel(
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
+    factory {
+        ImportViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
+    factory {
+        SettingsViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get()
+        )
+    }
 }

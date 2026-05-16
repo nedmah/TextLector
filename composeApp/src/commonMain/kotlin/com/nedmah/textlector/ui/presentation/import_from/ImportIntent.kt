@@ -17,4 +17,10 @@ interface ImportIntent {
     data object DismissUrlSheet : ImportIntent
     data class EnterUrl(val url: String) : ImportIntent
     data object ImportFromUrl : ImportIntent
+
+    data object OpenCamera : ImportIntent
+    data object CameraLaunched : ImportIntent
+    data class CameraImageCaptured(val uri: String) : ImportIntent
+    data object DownloadOcrData : ImportIntent
+    data object DismissOcrDialog : ImportIntent
 }

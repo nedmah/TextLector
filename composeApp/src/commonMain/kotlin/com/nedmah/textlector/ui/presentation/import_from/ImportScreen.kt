@@ -46,6 +46,7 @@ import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportSuccessSheet
 import com.nedmah.textlector.ui.presentation.import_from.components.ManualTextInput
+import com.nedmah.textlector.ui.presentation.import_from.components.OcrDownloadDialog
 import com.nedmah.textlector.ui.presentation.import_from.components.UrlImportSheet
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -92,11 +93,16 @@ fun ImportScreenRoot(
         }
     }
 
+    val cameraLauncher = rememberCameraLauncher { uri ->
+        viewModel.onIntent(ImportIntent.CameraImageCaptured(uri))
+    }
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ImportEffect.NavigateToReader -> onNavigateToReader(effect.documentId)
-                is ImportEffect.ShowError -> { /* Snackbar */ }
+                is ImportEffect.ShowError -> { /* Snackbar */
+                }
             }
         }
     }
@@ -106,6 +112,13 @@ fun ImportScreenRoot(
             urlSheetState.hide()
             keyboardController?.hide()
             focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(state.shouldLaunchCamera) {
+        if (state.shouldLaunchCamera) {
+            cameraLauncher()
+            viewModel.onIntent(ImportIntent.CameraLaunched)
         }
     }
 
@@ -157,6 +170,13 @@ fun ImportScreenRoot(
             }
         }
 
+        if (state.showOcrDownloadDialog) {
+            OcrDownloadDialog(
+                state = state.ocrDataState,
+                onDownload = { viewModel.onIntent(ImportIntent.DownloadOcrData) },
+                onDismiss = { viewModel.onIntent(ImportIntent.DismissOcrDialog) }
+            )
+        }
     }
 }
 
@@ -170,10 +190,26 @@ private fun ImportScreen(
     val focusManager = LocalFocusManager.current
 
     val fileTypes = listOf(
-        Triple("PDF Document", "STANDARD OCR", Res.drawable.ic_pdf_doc) to { onPickFile("application/pdf") },
-        Triple("Plain Text", "TXT / MD FILES", Res.drawable.ic_text_doc) to { onPickFile("text/plain") },
-        Triple("EPUB Book", "EPUB FILES", Res.drawable.ic_epub) to { onPickFile("application/epub+zip") },
-        Triple("FictionBook", "FB2 FILES", Res.drawable.ic_fb2) to { onPickFile("application/x-fictionbook+xml") },
+        Triple(
+            "PDF Document",
+            "STANDARD OCR",
+            Res.drawable.ic_pdf_doc
+        ) to { onPickFile("application/pdf") },
+        Triple(
+            "Plain Text",
+            "TXT / MD FILES",
+            Res.drawable.ic_text_doc
+        ) to { onPickFile("text/plain") },
+        Triple(
+            "EPUB Book",
+            "EPUB FILES",
+            Res.drawable.ic_epub
+        ) to { onPickFile("application/epub+zip") },
+        Triple(
+            "FictionBook",
+            "FB2 FILES",
+            Res.drawable.ic_fb2
+        ) to { onPickFile("application/x-fictionbook+xml") },
     )
 
     Column(
@@ -290,7 +326,7 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Camera - stub
+            // Url and camera
             ImportRowItem(
                 title = stringResource(Res.string.import_from_url),
                 iconRes = Res.drawable.ic_url,
@@ -300,7 +336,7 @@ private fun ImportScreen(
             ImportRowItem(
                 title = stringResource(Res.string.import_from_camera),
                 iconRes = Res.drawable.ic_camera,
-                onClick = { /* v2 */ }
+                onClick = { onIntent(ImportIntent.OpenCamera) }
             )
 
             Spacer(modifier = Modifier.height(32.dp))

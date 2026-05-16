@@ -53,6 +53,11 @@ UPDATE document
 SET is_favorite = :isFavorite
 WHERE id = :id;
 
+updateTitle:
+UPDATE document
+SET title = :title
+WHERE id = :id;
+
 updateLastOpened:
 UPDATE document
 SET last_opened_at = :lastOpenedAt

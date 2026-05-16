@@ -57,6 +57,7 @@ kotlin {
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.13.0"))
             implementation(libs.firebase.crashlytics)
             implementation(libs.firebase.analytics)
+            implementation(libs.tesseract4android)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -127,8 +128,8 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 122
-        versionName = "1.2.2"
+        versionCode = 125
+        versionName = "1.2.5"
     }
     packaging {
         resources {

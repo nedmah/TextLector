@@ -1,9 +1,11 @@
 <resources>
     <!-- Common -->
     <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
     <string name="action_delete">Delete</string>
     <string name="action_retry">Retry</string>
     <string name="action_download">Download</string>
+    <string name="action_rename">Rename</string>
     <string name="action_see_all">see all</string>
     <string name="app_name">TextLector</string>
     <string name="made_by">PROJECT WAS MADE BY @NEDMAH</string>
@@ -24,6 +26,7 @@
         <item quantity="other">%1$d items in your collection</item>
     </plurals>
     <string name="library_reading_time">%1$dm</string>
+    <string name="library_dialog_new_name">Enter a new name</string>
 
     <!-- Import -->
     <string name="import_title">Import</string>
@@ -46,6 +49,14 @@
     <string name="import_success_reading_time">READING TIME</string>
     <string name="import_success_reading_minutes">%1$d min</string>
     <string name="import_success_add">Add to Library</string>
+
+    <!-- Import Ocr Dialog -->
+    <string name="import_ocr_download_failed">Download failed</string>
+    <string name="import_ocr_title">This is a test feature</string>
+    <string name="import_ocr_subtitle">It may not work well. If you agree, to scan text with your camera, recognition data needs to be downloaded (~20 MB).</string>
+    <string name="import_ocr_downloading">Downloading recognition data...</string>
+    <string name="import_ocr_download_error">Failed to download: %1$s</string>
+    <string name="import_ocr_download">Download (~20 MB)</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
