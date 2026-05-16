@@ -21,7 +21,7 @@ import com.nedmah.textlector.domain.repository.PreferencesRepository
 import kotlinx.coroutines.flow.first
 
 class AndroidOcrEngine(
-    private val context : Context,
+    private val context: Context,
     private val ocrDataRepository: OcrDataRepository,
     private val preferencesRepository: PreferencesRepository
 ) : OcrEngine {
@@ -32,23 +32,21 @@ class AndroidOcrEngine(
     private val tessDataPath: String
         get() = context.filesDir.absolutePath // tessdata/ in there
 
-    override suspend fun recognize(imageUri: String): Result<String> =
+    override suspend fun recognize(imageUri: String): String =
         withContext(Dispatchers.IO) {
-            runCatching {
-                if (!ocrDataRepository.isReady()) error("OCR data not downloaded")
+            if (!ocrDataRepository.isReady()) error("OCR data not downloaded")
 
-                val api = getOrCreateApi()
-                val bitmap = loadBitmap(imageUri)
-                val processed = preprocessBitmap(bitmap)
+            val api = getOrCreateApi()
+            val bitmap = loadBitmap(imageUri)
+            val processed = preprocessBitmap(bitmap)
 
-                api.setImage(processed)
-                val result = api.utF8Text?.trim() ?: ""
-                Log.d("OCR", "result: ${result.take(300)}")
-                api.clear()
+            api.setImage(processed)
+            val result = api.utF8Text?.trim() ?: ""
+            Log.d("OCR", "result: ${result.take(300)}")
+            api.clear()
 
-                if (result.isBlank()) error("No text detected in image")
-                result
-            }
+            if (result.isBlank()) error("No text detected in image")
+            result
         }
 
     fun release() {
@@ -111,12 +109,14 @@ class AndroidOcrEngine(
         val contrastCanvas = Canvas(contrast)
         val scale = 1.5f
         val translate = (-.5f * scale + .5f) * 255f
-        val contrastMatrix = ColorMatrix(floatArrayOf(
-            scale, 0f, 0f, 0f, translate,
-            0f, scale, 0f, 0f, translate,
-            0f, 0f, scale, 0f, translate,
-            0f, 0f, 0f, 1f, 0f
-        ))
+        val contrastMatrix = ColorMatrix(
+            floatArrayOf(
+                scale, 0f, 0f, 0f, translate,
+                0f, scale, 0f, 0f, translate,
+                0f, 0f, scale, 0f, translate,
+                0f, 0f, 0f, 1f, 0f
+            )
+        )
         contrastCanvas.drawBitmap(grayscale, 0f, 0f, Paint().apply {
             colorFilter = ColorMatrixColorFilter(contrastMatrix)
         })

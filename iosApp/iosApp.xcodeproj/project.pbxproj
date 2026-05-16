@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B0C18E3B1B4391FF72DA88A /* IosOcrEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0C1DF0ED8CB974D6047D4D /* IosOcrEngine.swift */; };
 		9200B37C2F8443200057FFFC /* sherpa-onnx.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */; };
 		9200B37D2F8443200057FFFC /* sherpa-onnx.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9200B3802F84432F0057FFFC /* onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */; };
@@ -31,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		5B0C1426BE133A265459E2BD /* IosPdfPageExtractor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IosPdfPageExtractor.swift; sourceTree = "<group>"; };
+		5B0C1DF0ED8CB974D6047D4D /* IosOcrEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IosOcrEngine.swift; sourceTree = "<group>"; };
 		6F551669604884C8FBE71C32 /* TextLector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextLector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sherpa-onnx.xcframework"; path = "Frameworks/sherpa-onnx.xcframework"; sourceTree = "<group>"; };
 		9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = onnxruntime.xcframework; path = Frameworks/onnxruntime.xcframework; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 				75BD6A9926E372E7AADD68C7 /* iosApp */,
 				92454D9A2F800EB300A0AF72 /* Frameworks */,
 				09EDAE4A15C2D319BED9B4B6 /* Products */,
+				5B0C1DF0ED8CB974D6047D4D /* IosOcrEngine.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -182,6 +185,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B0C18E3B1B4391FF72DA88A /* IosOcrEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

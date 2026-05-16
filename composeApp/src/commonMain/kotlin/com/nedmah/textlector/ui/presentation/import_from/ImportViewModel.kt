@@ -67,15 +67,24 @@ class ImportViewModel(
             ImportIntent.DismissImport -> dismissImport()
 
             ImportIntent.OpenUrlSheet -> _state.update { it.copy(showUrlSheet = true) }
-            ImportIntent.DismissUrlSheet -> _state.update { it.copy(showUrlSheet = false, urlText = "", urlError = null) }
+            ImportIntent.DismissUrlSheet -> _state.update {
+                it.copy(
+                    showUrlSheet = false,
+                    urlText = "",
+                    urlError = null
+                )
+            }
 
             is ImportIntent.EnterUrl -> {
                 val error = UrlValidator.validate(intent.url)
-                _state.update { it.copy(
-                    urlText = intent.url,
-                    urlError = if (error != null) UrlValidator.errorMessage(error) else null
-                ) }
+                _state.update {
+                    it.copy(
+                        urlText = intent.url,
+                        urlError = if (error != null) UrlValidator.errorMessage(error) else null
+                    )
+                }
             }
+
             ImportIntent.ImportFromUrl -> importFromUrl()
 
             ImportIntent.OpenCamera -> {
@@ -102,7 +111,12 @@ class ImportViewModel(
                 _state.update { it.copy(ocrDataState = modelState) }
 
                 if (modelState is ModelState.Ready && _state.value.showOcrDownloadDialog) {
-                    _state.update { it.copy(showOcrDownloadDialog = false, shouldLaunchCamera = true) }
+                    _state.update {
+                        it.copy(
+                            showOcrDownloadDialog = false,
+                            shouldLaunchCamera = true
+                        )
+                    }
                 }
             }
         }
@@ -244,7 +258,7 @@ class ImportViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            ocrEngine.recognize(uri)
+            runCatching { ocrEngine.recognize(uri) }
                 .onSuccess { text ->
                     val title = text.lines()
                         .firstOrNull { it.isNotBlank() }

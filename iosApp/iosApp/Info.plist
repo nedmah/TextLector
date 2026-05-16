@@ -8,5 +8,7 @@
     <array>
         <string>audio</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>Used to scan text from images</string>
 </dict>
 </plist>
