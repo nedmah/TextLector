@@ -21,6 +21,7 @@ import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
 import com.nedmah.textlector.domain.usecase.GetRecentDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
+import com.nedmah.textlector.domain.usecase.RenameDocumentUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
 import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
@@ -71,6 +72,7 @@ val dataModule = module {
     factory { DownloadVoiceModelUseCase(get()) }
     factory { DeleteVoiceModelUseCase(get()) }
     factory { DownloadOcrDataUseCase(get()) }
+    factory { RenameDocumentUseCase(get()) }
 
     // ViewModels
     single {
@@ -82,6 +84,7 @@ val dataModule = module {
     }
     viewModel {
         LibraryViewModel(
+            get(),
             get(),
             get(),
             get(),

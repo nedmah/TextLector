@@ -7,6 +7,7 @@ import com.nedmah.textlector.domain.usecase.DeleteDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetDocumentsUseCase
 import com.nedmah.textlector.domain.usecase.GetFavoritesUseCase
 import com.nedmah.textlector.domain.usecase.GetRecentDocumentsUseCase
+import com.nedmah.textlector.domain.usecase.RenameDocumentUseCase
 import com.nedmah.textlector.domain.usecase.ToggleFavoriteUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import kotlinx.coroutines.Job
@@ -24,7 +25,8 @@ class LibraryViewModel(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val getRecentDocumentsUseCase: GetRecentDocumentsUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val updateLastOpenedUseCase: UpdateLastOpenedUseCase
+    private val updateLastOpenedUseCase: UpdateLastOpenedUseCase,
+    private val renameDocumentUseCase: RenameDocumentUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryState())
@@ -57,6 +59,9 @@ class LibraryViewModel(
                 deleteDocument(id)
             }
             is LibraryIntent.RequestDelete -> _state.update { it.copy(pendingDeleteDocumentId = intent.id) }
+            LibraryIntent.DismissRenameDialog -> _state.update { it.copy(documentToRename = null) }
+            is LibraryIntent.OpenRenameDialog -> _state.update { it.copy(documentToRename = intent.document) }
+            is LibraryIntent.RenameDocument -> renameDocument(intent.id, intent.newTitle)
         }
     }
 
@@ -106,7 +111,7 @@ class LibraryViewModel(
     }
 
     private fun toggleFavorite(id : String, isFavorite : Boolean)= viewModelScope.launch {
-        toggleFavoriteUseCase.invoke(id, isFavorite)
+        toggleFavoriteUseCase(id, isFavorite)
             .onFailure { sendEffect(_root_ide_package_.com.nedmah.textlector.ui.presentation.library.LibraryEffect.ShowError(it.message ?: "Error")) }
     }
 
@@ -120,8 +125,14 @@ class LibraryViewModel(
         }
     }
 
+    private fun renameDocument(id: String, title: String) = viewModelScope.launch {
+        renameDocumentUseCase(id, title)
+            .onFailure { sendEffect(LibraryEffect.ShowError(it.message ?: "Rename failed")) }
+        _state.update { it.copy(documentToRename = null) }
+    }
+
     private fun deleteDocument(id: String) = viewModelScope.launch {
-        deleteDocumentUseCase.invoke(id)
+        deleteDocumentUseCase(id)
             .onSuccess { sendEffect(LibraryEffect.DocumentDeleted) }
             .onFailure { sendEffect(LibraryEffect.ShowError(it.message ?: "Delete failed")) }
     }

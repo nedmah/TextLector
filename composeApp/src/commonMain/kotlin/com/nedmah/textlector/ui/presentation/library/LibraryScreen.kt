@@ -41,6 +41,7 @@ import com.nedmah.textlector.domain.model.DocumentSortOrder
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.library.components.FavoriteDocItem
 import com.nedmah.textlector.ui.presentation.library.components.LibrarySkeletonScreen
+import com.nedmah.textlector.ui.presentation.library.components.RenameDocumentDialog
 import com.nedmah.textlector.ui.presentation.library.components.SwipeableDocItem
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -94,6 +95,34 @@ fun LibraryScreenRoot(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
+    state.pendingDeleteDocumentId?.let {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(LibraryIntent.CancelDelete) },
+            title = { Text("Delete document?") },
+            text = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onEvent(LibraryIntent.ConfirmDelete) }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onEvent(LibraryIntent.CancelDelete) }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    state.documentToRename?.let { doc ->
+        RenameDocumentDialog(
+            document = doc,
+            onConfirm = { newTitle ->
+                viewModel.onEvent(LibraryIntent.RenameDocument(doc.id, newTitle))
+            },
+            onDismiss = { viewModel.onEvent(LibraryIntent.DismissRenameDialog) }
         )
     }
 }
@@ -237,6 +266,7 @@ private fun LibraryScreen(
             SwipeableDocItem(
                 document = document,
                 onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
+                onLongClick = { onIntent(LibraryIntent.OpenRenameDialog(document)) },
                 onDelete = { onIntent(LibraryIntent.RequestDelete(document.id)) },
                 onFavorite = {
                     onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
@@ -246,24 +276,6 @@ private fun LibraryScreen(
         }
     }
 
-
-    state.pendingDeleteDocumentId?.let {
-        AlertDialog(
-            onDismissRequest = { onIntent(LibraryIntent.CancelDelete) },
-            title = { Text("Delete document?") },
-            text = { Text("This action cannot be undone.") },
-            confirmButton = {
-                TextButton(onClick = { onIntent(LibraryIntent.ConfirmDelete) }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { onIntent(LibraryIntent.CancelDelete) }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 }
 
 @Composable

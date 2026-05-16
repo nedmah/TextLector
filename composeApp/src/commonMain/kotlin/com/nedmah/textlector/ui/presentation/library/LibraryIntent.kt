@@ -1,5 +1,6 @@
 package com.nedmah.textlector.ui.presentation.library
 
+import com.nedmah.textlector.domain.model.Document
 import com.nedmah.textlector.domain.model.DocumentSortOrder
 
 sealed interface LibraryIntent {
@@ -16,4 +17,8 @@ sealed interface LibraryIntent {
     data class RequestDelete(val id: String) : LibraryIntent
     data object ConfirmDelete : LibraryIntent
     data object CancelDelete : LibraryIntent
+
+    data class OpenRenameDialog(val document: Document) : LibraryIntent
+    data object DismissRenameDialog : LibraryIntent
+    data class RenameDocument(val id: String, val newTitle: String) : LibraryIntent
 }

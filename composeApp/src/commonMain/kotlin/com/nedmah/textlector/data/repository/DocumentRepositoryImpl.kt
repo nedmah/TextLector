@@ -100,4 +100,11 @@ class DocumentRepositoryImpl(
         withContext(Dispatchers.IO) {
             queries.updateReadingProgress(paragraphIndex = paragraphIndex.toLong(), id = id)
         }
+
+    override suspend fun updateTitle(
+        id: String,
+        title: String
+    ): Result<Unit> = withContext(Dispatchers.IO){
+        runCatching { queries.updateTitle(title = title, id = id) }
+    }
 }

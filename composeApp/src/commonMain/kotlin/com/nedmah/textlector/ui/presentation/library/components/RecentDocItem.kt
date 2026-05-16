@@ -1,6 +1,13 @@
 package com.nedmah.textlector.ui.presentation.library.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,10 +30,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
@@ -46,6 +58,7 @@ fun SwipeableDocItem(
     onDelete: () -> Unit,
     onFavorite: () -> Unit,
     onClick: () -> Unit,
+    onLongClick : () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -80,7 +93,8 @@ fun SwipeableDocItem(
     ) {
         RecentDocItem(
             document = document,
-            onClick = onClick
+            onClick = onClick,
+            onLongClick = onLongClick
         )
     }
 
@@ -135,7 +149,8 @@ private fun FavoriteBackground(isFavorite: Boolean) {
 @Composable
 private fun RecentDocItem(
     document: Document,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     val progress = if (document.totalParagraphs > 0) {
         document.lastParagraphIndex.toFloat() / document.totalParagraphs
@@ -143,13 +158,35 @@ private fun RecentDocItem(
 
     val isCompleted = progress >= 1f
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "scale"
+    )
+    val haptic = LocalHapticFeedback.current
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 6.dp),
+            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .graphicsLayer{ scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(12.dp))
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = onClick,
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                },
+            )
+        ,
         shape = RoundedCornerShape(12.dp),
-        onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),

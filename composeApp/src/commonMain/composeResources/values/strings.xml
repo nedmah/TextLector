@@ -1,9 +1,11 @@
 <resources>
     <!-- Common -->
     <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
     <string name="action_delete">Delete</string>
     <string name="action_retry">Retry</string>
     <string name="action_download">Download</string>
+    <string name="action_rename">Rename</string>
     <string name="action_see_all">see all</string>
     <string name="app_name">TextLector</string>
     <string name="made_by">PROJECT WAS MADE BY @NEDMAH</string>
@@ -24,6 +26,7 @@
         <item quantity="other">%1$d items in your collection</item>
     </plurals>
     <string name="library_reading_time">%1$dm</string>
+    <string name="library_dialog_new_name">Enter a new name</string>
 
     <!-- Import -->
     <string name="import_title">Import</string>
