@@ -43,7 +43,7 @@ private fun pickerFilter(mimeType: String): Array<String> =
 private fun Context.resolveMimeType(uri: Uri, displayName: String?): String {
     val name = displayName?.lowercase().orEmpty()
     return when {
-        name.endsWith(".fb2") -> FB2_MIME
+        name.endsWith(".fb2") || name.endsWith(".fb2.zip") -> FB2_MIME
         name.endsWith(".epub") -> "application/epub+zip"
         name.endsWith(".pdf") -> "application/pdf"
         name.endsWith(".txt") -> "text/plain"

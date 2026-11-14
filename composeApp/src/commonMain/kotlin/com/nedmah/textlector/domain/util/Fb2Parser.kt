@@ -2,14 +2,17 @@ package com.nedmah.textlector.domain.util
 
 import com.fleeksoft.ksoup.Ksoup
 import com.nedmah.textlector.common.platform.file.decodeWithCharset
+import no.synth.kmpzip.zip.ZipInputStream
 
 object Fb2Parser {
 
+    private val ZIP_MAGIC = byteArrayOf(0x50, 0x4B, 0x03, 0x04)
 
     data class Fb2Result(val title: String, val text: String)
 
     fun parse(bytes: ByteArray): Fb2Result {
-        val charset = detectCharset(bytes)
+        val xmlBytes = if (bytes.isZip()) unzipFb2(bytes) else bytes
+        val charset = detectCharset(xmlBytes)
         val xmlString = bytes.decodeWithCharset(charset)
 
         val doc = Ksoup.parse(xmlString)
@@ -37,5 +40,22 @@ object Fb2Parser {
             .find(header)
 
         return match?.groupValues?.get(1) ?: "UTF-8"
+    }
+
+    private fun ByteArray.isZip(): Boolean =
+        size >= ZIP_MAGIC.size && ZIP_MAGIC.indices.all { this[it] == ZIP_MAGIC[it] }
+
+    // .fb2.zip is an archive with a single .fb2 inside
+    private fun unzipFb2(bytes: ByteArray): ByteArray {
+        ZipInputStream(bytes).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory && entry.name.endsWith(".fb2", ignoreCase = true)) {
+                    return zis.readBytes()
+                }
+                entry = zis.nextEntry
+            }
+        }
+        error("No .fb2 file inside the archive")
     }
 }
