@@ -18,32 +18,6 @@ import platform.Foundation.stringWithContentsOfURL
 actual class FileReader {
 
     @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun readText(uri: String): Result<String> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                val nsUrl = NSURL.fileURLWithPath(uri)
-                var result = ""
-
-                NSFileCoordinator().coordinateReadingItemAtURL(
-                    url = nsUrl,
-                    options = 0u,
-                    error = null
-                ) { url ->
-                    url?.let {
-                        result = NSString.stringWithContentsOfURL(
-                            url = it,
-                            encoding = NSUTF8StringEncoding,
-                            error = null
-                        ) ?: ""
-                    }
-                }
-
-                if (result.isBlank()) error("Cannot read file: $uri")
-                result
-            }
-        }
-
-    @OptIn(ExperimentalForeignApi::class)
     actual suspend fun readPdf(uri: String, onProgress: (Int, Int) -> Unit): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {
