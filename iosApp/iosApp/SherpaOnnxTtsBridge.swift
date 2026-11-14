@@ -8,6 +8,7 @@
 import Foundation
 import AVFAudio
 import Darwin
+import SherpaOnnx
 
 
 @objc public class SherpaOnnxTtsBridge: NSObject, AVAudioPlayerDelegate {
@@ -159,7 +160,7 @@ import Darwin
                 let intSample = Int16(clamped * Float(Int16.max))
                 withUnsafeBytes(of: intSample) { data.append(contentsOf: $0) }
             }
-            var wav = self.makeWavHeader(dataSize: data.count, sampleRate: Int(audioResult.sampleRate))
+            var wav = Self.makeWavHeader(dataSize: data.count, sampleRate: Int(audioResult.sampleRate))
             wav.append(data)
             result = wav
         }
@@ -188,7 +189,7 @@ import Darwin
             let intSample = Int16(clamped * Float(Int16.max))
             withUnsafeBytes(of: intSample) { data.append(contentsOf: $0) }
         }
-        var wav = makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
+        var wav = Self.makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
         wav.append(data)
         playWavData(wav)
     }
@@ -206,13 +207,25 @@ import Darwin
 
     private func playPCM(data: Data, sampleRate: Int) {
         // WAV header + data
-        var wav = makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
+        var wav = Self.makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
         wav.append(data)
         audioPlayer = try? AVAudioPlayer(data: wav)
         audioPlayer?.play()
     }
+    
+    public static func makeWav(samples: [Float], sampleRate: Int) -> Data {
+        var data = Data(capacity: samples.count * 2)
+        for sample in samples {
+            let clamped = max(-1.0, min(1.0, sample))
+            let intSample = Int16(clamped * Float(Int16.max))
+            withUnsafeBytes(of: intSample) { data.append(contentsOf: $0) }
+        }
+        var wav = Self.makeWavHeader(dataSize: data.count, sampleRate: sampleRate)
+        wav.append(data)
+        return wav
+    }
 
-    private func makeWavHeader(dataSize: Int, sampleRate: Int) -> Data {
+    private static func makeWavHeader(dataSize: Int, sampleRate: Int) -> Data {
         var header = Data()
         let totalSize = dataSize + 36
         header.append(contentsOf: "RIFF".utf8)

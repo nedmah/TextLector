@@ -3,39 +3,37 @@
 //
 
 import Foundation
-import AVFAudio
 import ComposeApp
+import SherpaOnnx
 
 @objc class IosSupertonicEngine: NSObject, SherpaOnnxTtsEngine {
 
-    let bridge = SupertonicBridge()
+    private let repository: SupertonicRepository
+    private let player = SherpaOnnxTtsBridge() // used for WAV playback only
+
+    // Serial queue owns all native state: the model is never used from two threads
+    // and never released while generating (same role as the Mutex on Android)
+    private let ttsQueue = DispatchQueue(label: "com.lector.supertonic.tts")
+    private var tts: SherpaOnnxOfflineTtsWrapper?
+    private var loadedPaths: SupertonicModelPaths?
+    private var lang = "en"
+    private var speakerId = Int(SupertonicModel.shared.speakerId(gender: VoiceGender.male))
+
     private var paragraphs: [LectorParagraph] = []
-    private var currentLang: String = "en"
-    private var currentVoice: String = "M1"
 
-    let tts: SupertonicTts = {
-        let docsDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-        let storageDir = docsDir + "/supertonic"
-        print("[IosSupertonicEngine] tts storageDir: \(storageDir)")
-        return SupertonicTts(config: SupertonicConfig(
-            storageDir: storageDir,
-            inferenceSteps: 7,
-            defaultLang: "en",
-            defaultVoice: SupertonicVoice.m1,
-            defaultSpeed: 1.0,
-            huggingFaceBaseUrl: SupertonicConfig.companion.DEFAULT_HF_URL
-        ))
-    }()
+    init(repository: SupertonicRepository) {
+        self.repository = repository
+    }
 
+    // VoiceModel describes a Piper voice; Supertonic only needs its language and gender
     func loadVoice(model: VoiceModel) async throws {
-        currentLang = model.language
-        currentVoice = model.gender == VoiceGender.male ? "M1" : "F1"
-        
-        let docsDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-        let storageDir = docsDir + "/supertonic/onnx"
-        print("[IosSupertonicEngine] loading bridge from: \(storageDir)")
-        bridge.load(storageDir: storageDir)
-        print("[IosSupertonicEngine] bridge.isLoaded: \(bridge.isLoaded)")
+        let lang = model.language
+        let speakerId = Int(SupertonicModel.shared.speakerId(gender: model.gender))
+        ttsQueue.async {
+            self.lang = lang
+            self.speakerId = speakerId
+            _ = self.ensureTts() // warm up, model load takes a while
+        }
     }
 
     func setPlaylist(paragraphs: [LectorParagraph]) {
@@ -43,55 +41,89 @@ import ComposeApp
     }
 
     func speak(index: Int32, speed: Float) async throws {
-        guard Int(index) < paragraphs.count else { return }
-        let text = paragraphs[Int(index)].text
-        let audio = try await generate(text: text, speed: speed)
-        try await playAudio(audio: audio)
+        guard index >= 0 && Int(index) < paragraphs.count else { return }
+        let audio = try await generate(text: paragraphs[Int(index)].text, speed: speed)
+        if audio.size > 0 { try await playAudio(audio: audio) }
     }
 
     func generate(text: String, speed: Float) async throws -> KotlinByteArray {
-        let styleJson = loadVoiceStyle(currentVoice)
-        print("[IosSupertonicEngine] generate: voice=\(currentVoice), lang=\(currentLang), styleJson empty=\(styleJson == "{}")")
-        
-        guard let data = bridge.generate(
-            text: text,
-            lang: currentLang,
-            voiceStyleJson: styleJson,
-            speed: speed,
-            steps: 8
-        ) else {
-            print("[IosSupertonicEngine] bridge.generate returned nil")
-            return KotlinByteArray(size: 0)
+        let wav: Data = await withCheckedContinuation { continuation in
+            ttsQueue.async {
+                continuation.resume(returning: self.generateWav(text: text, speed: speed))
+            }
         }
-        print("[IosSupertonicEngine] generate success: \(data.count) bytes")
-        return data.toKotlinByteArray()
+        return wav.toKotlinByteArray()
     }
 
     func playAudio(audio: KotlinByteArray) async throws {
-        bridge.playWav(data: audio.toData())
+        player.playWav(data: audio.toData())
     }
 
     func stop() {
-        bridge.cancel()
-        bridge.stopPlayback()
+        player.stop()
     }
 
     func shutdown() {
-        bridge.cancel()
-        bridge.close()
+        player.stop()
+        ttsQueue.async {
+            self.tts = nil // deinit releases the native object
+            self.loadedPaths = nil
+        }
     }
 
-    private func loadVoiceStyle(_ voice: String) -> String {
-        guard let url = Bundle.main.url(
-                forResource: voice.uppercased(),
-                withExtension: "json",
-                subdirectory: "supertonic/voice_styles"
-            ),
-            let json = try? String(contentsOf: url, encoding: .utf8) else {
-                print("[IosSupertonicEngine] voice style not found: \(voice)")
-                return "{}"
+    // MARK: - ttsQueue only
+
+    private func generateWav(text: String, speed: Float) -> Data {
+        guard let tts = ensureTts() else { return Data() }
+        let config = SherpaOnnxGenerationConfigSwift(
+            speed: speed,
+            sid: speakerId,
+            numSteps: Int(SupertonicModel.shared.NUM_STEPS),
+            extra: ["lang": lang]
+        )
+        let audio = tts.generateWithConfig(text: text, config: config, callback: nil, arg: nil)
+        guard audio.audio != nil else { return Data() }
+        let samples = audio.samples
+        guard !samples.isEmpty else { return Data() }
+        return SherpaOnnxTtsBridge.makeWav(samples: samples, sampleRate: Int(audio.sampleRate))
+    }
+
+    // Builds the model lazily and drops it if the files were deleted
+    private func ensureTts() -> SherpaOnnxOfflineTtsWrapper? {
+        let paths = repository.getModelPaths()
+        if paths != loadedPaths || tts == nil {
+            tts = nil
+            loadedPaths = nil
+            guard let paths else { return nil }
+            let wrapper = makeTts(paths)
+            guard wrapper.tts != nil else {
+                print("[IosSupertonicEngine] failed to create OfflineTts")
+                return nil
             }
-            return json
+            tts = wrapper
+            loadedPaths = paths
+        }
+        return tts
+    }
+
+    private func makeTts(_ paths: SupertonicModelPaths) -> SherpaOnnxOfflineTtsWrapper {
+        let supertonic = sherpaOnnxOfflineTtsSupertonicModelConfig(
+            durationPredictor: paths.durationPredictor,
+            textEncoder: paths.textEncoder,
+            vectorEstimator: paths.vectorEstimator,
+            vocoder: paths.vocoder,
+            ttsJson: paths.ttsJson,
+            unicodeIndexer: paths.unicodeIndexer,
+            voiceStyle: paths.voiceStyle
+        )
+        let modelConfig = sherpaOnnxOfflineTtsModelConfig(
+            numThreads: 4,
+            debug: 0,
+            provider: "cpu",
+            supertonic: supertonic
+        )
+        var config = sherpaOnnxOfflineTtsConfig(model: modelConfig)
+        return withUnsafePointer(to: &config) { SherpaOnnxOfflineTtsWrapper(config: $0) }
     }
 }
 

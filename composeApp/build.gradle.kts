@@ -28,7 +28,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export(libs.supertonic.kmp)
         }
     }
 
@@ -99,7 +98,6 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)
-            api(libs.supertonic.kmp)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

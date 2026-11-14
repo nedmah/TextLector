@@ -7,7 +7,6 @@ import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.IosOcrDataRepository
-import com.nedmah.textlector.data.repository.IosSupertonicRepository
 import com.nedmah.textlector.data.repository.IosVoiceModelRepositoryImpl
 import com.nedmah.textlector.domain.repository.OcrDataRepository
 import com.nedmah.textlector.domain.repository.SupertonicRepository
@@ -34,5 +33,7 @@ actual val platformModule = module {
         IosEngineHolder.ocrEngine ?: error("OcrEngine not initialized")
     }
     single<OcrDataRepository> { IosOcrDataRepository() }
-    single<SupertonicRepository> { IosSupertonicRepository() }
+    single<SupertonicRepository> {
+        IosEngineHolder.supertonicRepository ?: error("SupertonicRepository not initialized")
+    }
 }
