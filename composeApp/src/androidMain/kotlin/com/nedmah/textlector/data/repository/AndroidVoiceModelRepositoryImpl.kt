@@ -2,6 +2,7 @@ package com.nedmah.textlector.data.repository
 
 import android.content.Context
 import com.nedmah.textlector.common.platform.logging.CrashReporter
+import com.nedmah.textlector.data.download.HttpFileDownloader
 import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.VoiceId
@@ -21,8 +22,6 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 class AndroidVoiceModelRepositoryImpl(
     private val context: Context
@@ -61,15 +60,14 @@ class AndroidVoiceModelRepositoryImpl(
             // tokens.txt (~1KB)
             val tokensFile = File(modelDir, "tokens.txt")
             if (!tokensFile.exists()) {
-                downloadFile(model.tokensUrl, tokensFile, onProgress = null)
+                HttpFileDownloader.download(model.tokensUrl, tokensFile)
             }
 
             // .onnx (~63MB)
             val onnxFile = File(modelDir, model.onnxFileName)
             if (!onnxFile.exists()) {
-                downloadFile(model.onnxUrl, onnxFile) { progress ->
-                    val state = ModelState.Downloading(0.1f + progress * 0.9f)
-                    stateFlow.value = state
+                HttpFileDownloader.download(model.onnxUrl, onnxFile) { downloaded, total ->
+                    stateFlow.value = ModelState.Downloading(0.1f + downloaded.toFloat() / total * 0.9f)
                 }
             }
 
@@ -108,44 +106,10 @@ class AndroidVoiceModelRepositoryImpl(
 
     override fun isEspeakDataReady(): Boolean = espeakDir.exists()
 
-
-    private fun downloadFile(
-        url: String,
-        dest: File,
-        onProgress: ((Float) -> Unit)?
-    ) {
-        val tempFile = File(dest.parent, "${dest.name}.tmp")
-        try {
-            val connection = URL(url).openConnection() as HttpURLConnection
-            connection.connect()
-            val totalBytes = connection.contentLengthLong
-
-            connection.inputStream.use { input ->
-                FileOutputStream(tempFile).use { output ->
-                    val buffer = ByteArray(8 * 1024)
-                    var downloaded = 0L
-                    var bytes = input.read(buffer)
-                    while (bytes >= 0) {
-                        output.write(buffer, 0, bytes)
-                        downloaded += bytes
-                        if (totalBytes > 0) {
-                            onProgress?.invoke(downloaded.toFloat() / totalBytes)
-                        }
-                        bytes = input.read(buffer)
-                    }
-                }
-            }
-            tempFile.renameTo(dest) // protect from partial download
-        } catch (e: Exception) {
-            tempFile.delete()
-            throw e
-        }
-    }
-
-    private fun downloadAndExtractEspeak() {
+    private suspend fun downloadAndExtractEspeak() {
         val tarFile = File(modelsDir, "espeak-ng-data.tar.bz2")
         try {
-            downloadFile(VoiceRegistry.ESPEAK_DATA_URL, tarFile, onProgress = null)
+            HttpFileDownloader.download(VoiceRegistry.ESPEAK_DATA_URL, tarFile)
             extractTarBz2(tarFile, modelsDir)
         } finally {
             tarFile.delete() // no need for that archive now
