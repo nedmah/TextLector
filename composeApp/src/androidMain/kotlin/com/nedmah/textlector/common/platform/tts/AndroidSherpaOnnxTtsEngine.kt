@@ -6,7 +6,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
 import com.nedmah.textlector.common.platform.logging.CrashReporter
-import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -101,7 +101,7 @@ class AndroidSherpaOnnxTtsEngine(
         currentVoiceId = null
     }
 
-    private fun buildOfflineTts(path: ModelPath): OfflineTts {
+    private fun buildOfflineTts(path: PiperModelPath): OfflineTts {
         val vitsConfig = OfflineTtsVitsModelConfig(
             model = path.onnxPath,
             lexicon = "",

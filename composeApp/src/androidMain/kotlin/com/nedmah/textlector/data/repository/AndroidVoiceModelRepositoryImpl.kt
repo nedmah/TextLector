@@ -2,7 +2,7 @@ package com.nedmah.textlector.data.repository
 
 import android.content.Context
 import com.nedmah.textlector.common.platform.logging.CrashReporter
-import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -84,13 +84,13 @@ class AndroidVoiceModelRepositoryImpl(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getModelPath(id: VoiceId): ModelPath? {
+    override fun getModelPath(id: VoiceId): PiperModelPath? {
         val model = VoiceRegistry.getById(id)
         val modelDir = File(modelsDir, model.modelDirName)
         val onnxFile = File(modelDir, model.onnxFileName)
         val tokensFile = File(modelDir, "tokens.txt")
         if (!onnxFile.exists() || !tokensFile.exists() || !espeakDir.exists()) return null
-        return ModelPath(
+        return PiperModelPath(
             onnxPath = onnxFile.absolutePath,
             tokensPath = tokensFile.absolutePath,
             espeakDataPath = espeakDir.absolutePath

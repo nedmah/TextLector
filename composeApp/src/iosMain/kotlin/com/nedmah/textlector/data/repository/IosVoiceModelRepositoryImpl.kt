@@ -1,7 +1,7 @@
 package com.nedmah.textlector.data.repository
 
 import com.nedmah.textlector.di.IosEngineHolder
-import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -97,14 +97,14 @@ class IosVoiceModelRepositoryImpl : VoiceModelRepository {
         }
     }
 
-    override fun getModelPath(id: VoiceId): ModelPath? {
+    override fun getModelPath(id: VoiceId): PiperModelPath? {
         val model = VoiceRegistry.getById(id)
         val modelDir = modelsDir.URLByAppendingPathComponent(model.modelDirName)!!
         val onnxFile = modelDir.URLByAppendingPathComponent(model.onnxFileName)!!
         val tokensFile = modelDir.URLByAppendingPathComponent("tokens.txt")!!
         if (!fileManager.fileExistsAtPath(onnxFile.path!!) ||
             !fileManager.fileExistsAtPath(tokensFile.path!!)) return null
-        return ModelPath(
+        return PiperModelPath(
             onnxPath = onnxFile.path!!,
             tokensPath = tokensFile.path!!,
             espeakDataPath = espeakBundlePath()
