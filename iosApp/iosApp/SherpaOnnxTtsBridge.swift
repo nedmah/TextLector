@@ -245,8 +245,14 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        if let http = downloadTask.response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            print("DownloadDelegate: HTTP \(http.statusCode) for \(downloadTask.originalRequest?.url?.absoluteString ?? "?")")
+            onComplete(false)
+            return
+        }
         let destURL = URL(fileURLWithPath: destPath)
         do {
+            try? FileManager.default.removeItem(at: destURL)
             try FileManager.default.moveItem(at: location, to: destURL)
             onComplete(true)
         } catch {
@@ -265,6 +271,7 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        session.finishTasksAndInvalidate() // session retains its delegate until invalidated
         if let error = error {
             print("DownloadDelegate: error \(error)")
             onComplete(false)
