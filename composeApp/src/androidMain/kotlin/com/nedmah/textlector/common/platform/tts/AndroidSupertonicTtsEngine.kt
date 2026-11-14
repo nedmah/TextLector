@@ -32,10 +32,6 @@ class AndroidSupertonicTtsEngine(
     private val ttsMutex = Mutex() // guards tts: native object must not be released while generating
     private val engineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // supertonic can't abort a running generation, so stop() bumps this and stale results are dropped
-    @Volatile
-    private var playbackSession = 0
-
     @Volatile
     private var lang = "en"
     @Volatile
@@ -52,7 +48,6 @@ class AndroidSupertonicTtsEngine(
     }
 
     override suspend fun generate(text: String, speed: Float): ByteArray = withContext(Dispatchers.IO) {
-        val session = playbackSession
         try {
             val audio = ttsMutex.withLock {
                 val engine = ensureTts() ?: return@withContext ByteArray(0)
@@ -64,7 +59,7 @@ class AndroidSupertonicTtsEngine(
                 )
                 engine.generateWithConfig(text, config)
             }
-            if (session != playbackSession || audio.samples.isEmpty()) ByteArray(0)
+            if (audio.samples.isEmpty()) ByteArray(0)
             else AndroidTrackPlayer.samplesToWav(audio.samples, audio.sampleRate)
         } catch (e: CancellationException) {
             throw e
@@ -94,7 +89,6 @@ class AndroidSupertonicTtsEngine(
     }
 
     override fun stop() {
-        playbackSession++
         AndroidTrackPlayer.stop(audioTrack)
     }
 

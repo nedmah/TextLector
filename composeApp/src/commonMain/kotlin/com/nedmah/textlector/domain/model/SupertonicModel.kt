@@ -13,7 +13,7 @@ data class SupertonicModelPaths(
 object SupertonicModel {
     const val DIR_NAME = "supertonic3"
     const val LEGACY_DIR_NAME = "supertonic" // supertonic-kmp storage, app <= 1.3.0
-    const val NUM_STEPS = 7
+    const val NUM_STEPS = 6
 
     private const val HF_BASE =
         "https://huggingface.co/csukuangfj2/sherpa-onnx-supertonic-3-tts-int8-2026-05-11/resolve/main"
