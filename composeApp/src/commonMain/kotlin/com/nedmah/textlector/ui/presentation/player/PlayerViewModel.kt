@@ -134,7 +134,7 @@ class PlayerViewModel(
         }
     }
 
-    private fun play() {
+    private fun play(stopCurrent: Boolean = true) {
 
         if (!_state.value.isLoaded) {
             playerLog("[DEBUG] play() aborted: isLoaded=false, paragraphs=${_state.value.paragraphs.size}, document=${_state.value.document?.id}")
@@ -154,21 +154,22 @@ class PlayerViewModel(
 
         val utteranceId = ++currentUtteranceId
         playbackJob?.cancel()
-        ttsEngine.stop()
+        if (stopCurrent) ttsEngine.stop() // natural advance keeps the queue: next paragraph may be prefetched
         _state.update { it.copy(isPlaying = true) }
 
         playbackJob = viewModelScope.launch {
             try {
                 ttsEngine.speak(currentIndex, _state.value.playbackSpeed)
             } catch (e: Exception) {
-                if (e is CancellationException) return@launch
+                // every intentional cancel bumps currentUtteranceId; anything else is a failed speak
+                if (e is CancellationException && utteranceId != currentUtteranceId) return@launch
                 CrashReporter.recordException(e, "speak failed at index=$currentIndex")
                 _state.update { it.copy(isPlaying = false) }
                 return@launch
             }
 
             if (utteranceId == currentUtteranceId) {
-                navigateParagraph(+1)
+                navigateParagraph(+1, fromPlayback = true)
             }
         }
     }
@@ -186,7 +187,7 @@ class PlayerViewModel(
         scheduleSaveProgress(_state.value.currentParagraphIndex)
     }
 
-    private fun navigateParagraph(delta: Int) {
+    private fun navigateParagraph(delta: Int, fromPlayback: Boolean = false) {
         val current = _state.value
         if (current.paragraphs.isEmpty()) return
 
@@ -208,7 +209,7 @@ class PlayerViewModel(
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (wasPlaying) play()
+        if (wasPlaying) play(stopCurrent = !fromPlayback)
 
     }
 
