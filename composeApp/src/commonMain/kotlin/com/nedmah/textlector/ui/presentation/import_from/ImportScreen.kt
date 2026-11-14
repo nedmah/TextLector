@@ -87,9 +87,9 @@ fun ImportScreenRoot(
 
     val urlSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val fileLauncher = rememberFileLauncher { uri, mimeType ->
+    val fileLauncher = rememberFileLauncher { uri, mimeType, fileName ->
         if (uri != null) {
-            viewModel.onIntent(ImportIntent.FileSelected(uri, mimeType))
+            viewModel.onIntent(ImportIntent.FileSelected(uri, mimeType, fileName))
         }
     }
 

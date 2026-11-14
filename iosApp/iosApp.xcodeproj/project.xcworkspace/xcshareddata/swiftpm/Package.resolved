@@ -1,13 +1,22 @@
 {
-  "originHash" : "54a530a8a66c1ee0cc1c6dd34159a96243f09d436e10ae5178973082bff1ef28",
+  "originHash" : "8d397f7a7077f1abc0d4a3cf56d0427fd8ca111d3895398a65221596b37631ac",
   "pins" : [
     {
-      "identity" : "onnxruntime-swift-package-manager",
+      "identity" : "onnxruntime-libs",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/microsoft/onnxruntime-swift-package-manager",
+      "location" : "https://github.com/csukuangfj/onnxruntime-libs",
       "state" : {
-        "revision" : "b7fb7f7dea8a2469e6335d95a61b8f36d0dc83b2",
-        "version" : "1.24.2"
+        "revision" : "8ebc5ebf92190903c274a7621ba4c96a732335ec",
+        "version" : "1.28.2"
+      }
+    },
+    {
+      "identity" : "sherpa-onnx",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/k2-fsa/sherpa-onnx",
+      "state" : {
+        "revision" : "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+        "version" : "1.13.8"
       }
     }
   ],

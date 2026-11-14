@@ -6,7 +6,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
 import com.nedmah.textlector.common.platform.logging.CrashReporter
-import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -17,6 +17,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class AndroidSherpaOnnxTtsEngine(
@@ -24,6 +26,7 @@ class AndroidSherpaOnnxTtsEngine(
 ) : SherpaOnnxTtsEngine {
 
     private var tts: OfflineTts? = null
+    private val ttsMutex = Mutex() // guards tts: native object must not be released while generating
     private var audioTrack: AudioTrack? = null
     private var currentVoiceId: VoiceId? = null
     private var loadingJob: Job? = null  // we need to read model and build a session before playing
@@ -34,11 +37,15 @@ class AndroidSherpaOnnxTtsEngine(
     override suspend fun loadVoice(model: VoiceModel) {
         if (model.id == currentVoiceId) return
         loadingJob = engineScope.launch {
-            val path = modelRepository.getModelPath(model.id) ?: return@launch
-            tts?.release()
-            tts = buildOfflineTts(path)
-            currentVoiceId = model.id
-            CrashReporter.log("loadVoice: ${model.id}", tag = "SherpaEngine")
+            ttsMutex.withLock {
+                if (model.id == currentVoiceId) return@withLock
+                val path = modelRepository.getModelPath(model.id) ?: return@launch
+                tts?.release()
+                tts = null
+                tts = buildOfflineTts(path)
+                currentVoiceId = model.id
+                CrashReporter.log("loadVoice: ${model.id}", tag = "SherpaEngine")
+            }
         }
     }
 
@@ -52,7 +59,9 @@ class AndroidSherpaOnnxTtsEngine(
         val text = paragraphs.getOrNull(index)?.text ?: return
 
         withContext(Dispatchers.IO) {
-            val audio = engine.generate(text = text, sid = 0, speed = speed)
+            val audio = ttsMutex.withLock {
+                tts?.generate(text = text, sid = 0, speed = speed)
+            } ?: return@withContext
             if (coroutineContext.isActive) {
                 AndroidTrackPlayer.play(audio.samples, audio.sampleRate) { track ->
                     audioTrack?.release()
@@ -67,7 +76,9 @@ class AndroidSherpaOnnxTtsEngine(
         val engine = tts ?: return ByteArray(0)
         return withContext(Dispatchers.IO) {
             try {
-                val audio = engine.generate(text = text, sid = 0, speed = speed)
+                val audio = ttsMutex.withLock {
+                    tts?.generate(text = text, sid = 0, speed = speed)
+                } ?: return@withContext ByteArray(0)
                 AndroidTrackPlayer.samplesToWav(audio.samples, audio.sampleRate)
             } catch (e: Exception) {
                 CrashReporter.recordException(e, "generate failed")
@@ -101,7 +112,7 @@ class AndroidSherpaOnnxTtsEngine(
         currentVoiceId = null
     }
 
-    private fun buildOfflineTts(path: ModelPath): OfflineTts {
+    private fun buildOfflineTts(path: PiperModelPath): OfflineTts {
         val vitsConfig = OfflineTtsVitsModelConfig(
             model = path.onnxPath,
             lexicon = "",

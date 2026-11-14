@@ -8,35 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		5B0C18E3B1B4391FF72DA88A /* IosOcrEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0C1DF0ED8CB974D6047D4D /* IosOcrEngine.swift */; };
-		9200B37C2F8443200057FFFC /* sherpa-onnx.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */; };
-		9200B37D2F8443200057FFFC /* sherpa-onnx.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9200B3802F84432F0057FFFC /* onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */; };
-		9200B3812F84432F0057FFFC /* onnxruntime.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		92454D9C2F800EB300A0AF72 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92454D9B2F800EB300A0AF72 /* libsqlite3.tbd */; };
-		9256B8E22FCA4A7700DFDD3B /* onnxruntime in Frameworks */ = {isa = PBXBuildFile; productRef = 9256B8E12FCA4A7700DFDD3B /* onnxruntime */; };
-		9256B8E42FCA4A7700DFDD3B /* onnxruntime_extensions in Frameworks */ = {isa = PBXBuildFile; productRef = 9256B8E32FCA4A7700DFDD3B /* onnxruntime_extensions */; };
+		92E84D2F30A8EC280029D69E /* sherpa-onnx in Frameworks */ = {isa = PBXBuildFile; productRef = 92E84D2E30A8EC280029D69E /* sherpa-onnx */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		9200B37E2F8443200057FFFC /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				9200B37D2F8443200057FFFC /* sherpa-onnx.xcframework in Embed Frameworks */,
-				9200B3812F84432F0057FFFC /* onnxruntime.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		5B0C1DF0ED8CB974D6047D4D /* IosOcrEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IosOcrEngine.swift; sourceTree = "<group>"; };
 		6F551669604884C8FBE71C32 /* TextLector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextLector.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = "sherpa-onnx.xcframework"; path = "Frameworks/sherpa-onnx.xcframework"; sourceTree = "<group>"; };
-		9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = onnxruntime.xcframework; path = Frameworks/onnxruntime.xcframework; sourceTree = "<group>"; };
 		92454D9B2F800EB300A0AF72 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -58,11 +36,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9256B8E42FCA4A7700DFDD3B /* onnxruntime_extensions in Frameworks */,
+				92E84D2F30A8EC280029D69E /* sherpa-onnx in Frameworks */,
 				92454D9C2F800EB300A0AF72 /* libsqlite3.tbd in Frameworks */,
-				9200B37C2F8443200057FFFC /* sherpa-onnx.xcframework in Frameworks */,
-				9256B8E22FCA4A7700DFDD3B /* onnxruntime in Frameworks */,
-				9200B3802F84432F0057FFFC /* onnxruntime.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,8 +66,6 @@
 		92454D9A2F800EB300A0AF72 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9200B37F2F84432F0057FFFC /* onnxruntime.xcframework */,
-				9200B37B2F8443200057FFFC /* sherpa-onnx.xcframework */,
 				92454D9B2F800EB300A0AF72 /* libsqlite3.tbd */,
 			);
 			name = Frameworks;
@@ -106,10 +79,8 @@
 			buildConfigurationList = 986083A44367CCBBCCA659C1 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
 				0A6A516EE8DA19A7A6ADBBE0 /* Compile Kotlin Framework */,
-				9256B8E72FCA4AFA00DFDD3B /* Run Script */,
 				9DFA1BCD13DF0F0B274A28E6 /* Sources */,
 				977D01FEC551222C32339488 /* Frameworks */,
-				9200B37E2F8443200057FFFC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -120,8 +91,7 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
-				9256B8E12FCA4A7700DFDD3B /* onnxruntime */,
-				9256B8E32FCA4A7700DFDD3B /* onnxruntime_extensions */,
+				92E84D2E30A8EC280029D69E /* sherpa-onnx */,
 			);
 			productName = iosApp;
 			productReference = 6F551669604884C8FBE71C32 /* TextLector.app */;
@@ -153,7 +123,7 @@
 			mainGroup = 757282F638FB8BDD873B6BAD;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9256B8E02FCA4A7700DFDD3B /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */,
+				92E84D2D30A8EC280029D69E /* XCRemoteSwiftPackageReference "sherpa-onnx" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 09EDAE4A15C2D319BED9B4B6 /* Products */;
@@ -184,24 +154,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
-		};
-		9256B8E72FCA4AFA00DFDD3B /* Run Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "RESOURCES_SRC=\"/Users/denis/AndroidStudioProjects/supertonickmp/core/build/bin/iosArm64/debugFramework/SupertonicKMP.framework/supertonic\"\nAPP_PATH=\"$BUILT_PRODUCTS_DIR/$WRAPPER_NAME\"\n\nif [ -d \"$RESOURCES_SRC\" ] && [ -d \"$APP_PATH\" ]; then\n    cp -R \"$RESOURCES_SRC\" \"$APP_PATH/\"\n    echo \"Copied supertonic voice styles!\"\nelse\n    echo \"Skipped: $RESOURCES_SRC not found\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -299,7 +251,6 @@
 				DEVELOPMENT_TEAM = N623JP2C3H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				"HEADER_SEARCH_PATHS[arch=*]" = "$(SRCROOT)/Frameworks/sherpa-onnx.xcframework/ios-arm64/Headers";
 				INFOPLIST_FILE = iosApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -331,7 +282,6 @@
 				DEVELOPMENT_TEAM = N623JP2C3H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				"HEADER_SEARCH_PATHS[arch=*]" = "$(SRCROOT)/Frameworks/sherpa-onnx.xcframework/ios-arm64/Headers";
 				INFOPLIST_FILE = iosApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -437,26 +387,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9256B8E02FCA4A7700DFDD3B /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */ = {
+		92E84D2D30A8EC280029D69E /* XCRemoteSwiftPackageReference "sherpa-onnx" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/microsoft/onnxruntime-swift-package-manager";
+			repositoryURL = "https://github.com/k2-fsa/sherpa-onnx";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.24.2;
+				kind = exactVersion;
+				version = 1.13.8;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9256B8E12FCA4A7700DFDD3B /* onnxruntime */ = {
+		92E84D2E30A8EC280029D69E /* sherpa-onnx */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9256B8E02FCA4A7700DFDD3B /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
-			productName = onnxruntime;
-		};
-		9256B8E32FCA4A7700DFDD3B /* onnxruntime_extensions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9256B8E02FCA4A7700DFDD3B /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
-			productName = onnxruntime_extensions;
+			package = 92E84D2D30A8EC280029D69E /* XCRemoteSwiftPackageReference "sherpa-onnx" */;
+			productName = "sherpa-onnx";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

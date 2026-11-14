@@ -20,11 +20,10 @@ kotlinx-coroutines = "1.10.2"
 material3 = "1.10.0-alpha05"
 koin = "4.1.0"
 multiplatform-settings = "1.3.0"
-sherpaOnnx = "1.12.34"
+sherpaOnnx = "1.13.8"
 sqldelight = "2.0.2"
 navigation = "2.9.0-beta01"
 okio = "3.9.0"
-supertonicKmp = "0.1.0"
 tesseract4android = "4.9.0"
 uuid = "0.8.4"
 pdfbox-android = "2.0.27.0"
@@ -36,6 +35,7 @@ google-services = "4.4.2"
 firebase-crashlytics-plugin = "3.0.3"
 firebase-bom = "33.13.0"
 mlkit-text = "16.0.1"
+rustoreReview = "10.5.2"
 
 [libraries]
 commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
@@ -113,8 +113,7 @@ tesseract4android = { module = "cz.adaptech.tesseract4android:tesseract4android"
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
-# supertonic tts
-supertonic-kmp = { module = "io.github.nedmah:supertonic-kmp", version.ref = "supertonicKmp" }
+rustore-review = { module = "ru.rustore.sdk:review", version.ref = "rustoreReview" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

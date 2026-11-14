@@ -19,6 +19,7 @@ interface PreferencesRepository {
 
     suspend fun setEngineType(type: TtsEngineType)
 
+    suspend fun incrementFinishedDocumentsCount(): Int
 
     fun getPreferences(): Flow<UserPreferences>
 

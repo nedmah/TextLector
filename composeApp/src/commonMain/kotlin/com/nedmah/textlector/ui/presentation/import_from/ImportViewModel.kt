@@ -54,7 +54,7 @@ class ImportViewModel(
                 )
             }
 
-            is ImportIntent.FileSelected -> importFile(intent.uri, intent.mimeType)
+            is ImportIntent.FileSelected -> importFile(intent.uri, intent.mimeType, intent.fileName)
 
             ImportIntent.ImportManually -> importManually()
             ImportIntent.DismissError -> _state.update {
@@ -169,7 +169,7 @@ class ImportViewModel(
         }
     }
 
-    private fun importFile(uri: String, mimeType: String) {
+    private fun importFile(uri: String, mimeType: String, fileName: String?) {
         val sourceType = when (mimeType) {
             "application/pdf" -> SourceType.Pdf
             "text/plain" -> SourceType.Txt
@@ -183,7 +183,8 @@ class ImportViewModel(
             }
         }
 
-        val title = uri.substringAfterLast("/").substringBeforeLast(".")
+        val title = fileName?.removeSuffix(".zip")?.substringBeforeLast('.')
+            ?: uri.substringAfterLast("/").substringBeforeLast(".")
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, importProgress = null) }

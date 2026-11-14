@@ -10,6 +10,7 @@ import com.nedmah.textlector.domain.model.ProcessedDocument
 import com.nedmah.textlector.domain.model.SourceType
 import com.nedmah.textlector.domain.util.EpubParser
 import com.nedmah.textlector.domain.util.Fb2Parser
+import com.nedmah.textlector.domain.util.TextDecoder
 import com.nedmah.textlector.domain.util.TextSegmenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +42,7 @@ class ImportDocumentUseCase(
                 }
 
                 is SourceType.Txt -> {
-                    text = fileReader.readText(uri).getOrThrow()
+                    text = TextDecoder.decode(fileReader.readBytes(uri).getOrThrow())
                     resolvedTitle = title
                 }
 

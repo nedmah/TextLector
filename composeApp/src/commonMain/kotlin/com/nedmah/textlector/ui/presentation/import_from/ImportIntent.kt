@@ -4,7 +4,7 @@ interface ImportIntent {
     data class EnterText(val text: String) :
         ImportIntent
 
-    data class FileSelected(val uri: String, val mimeType: String) : ImportIntent
+    data class FileSelected(val uri: String, val mimeType: String, val fileName: String?) : ImportIntent
     data object ImportManually : ImportIntent
     data object DismissError : ImportIntent
     data object ConfirmImport :

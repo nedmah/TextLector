@@ -11,17 +11,6 @@ import kotlinx.coroutines.withContext
 
 actual class FileReader(private val context: Context) {
 
-    actual suspend fun readText(uri: String): Result<String> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                context.contentResolver
-                    .openInputStream(uri.toUri())
-                    ?.bufferedReader()
-                    ?.use { it.readText() }
-                    ?: error("Cannot open stream for uri: $uri")
-            }
-        }
-
     actual suspend fun readPdf(uri: String, onProgress: (Int, Int) -> Unit): Result<String> =
         withContext(Dispatchers.IO) {
             runCatching {

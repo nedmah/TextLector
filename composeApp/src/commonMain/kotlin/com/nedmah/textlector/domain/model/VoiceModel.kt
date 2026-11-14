@@ -1,6 +1,6 @@
 package com.nedmah.textlector.domain.model
 
-data class ModelPath(
+data class PiperModelPath(
     val onnxPath: String,
     val tokensPath: String,
     val espeakDataPath: String

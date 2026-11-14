@@ -77,8 +77,8 @@
     <string name="settings_engine_piper_title">Piper</string>
     <string name="settings_engine_piper_subtitle">Высококачественный офлайн нейронный TTS</string>
     <string name="settings_engine_supertonic_title">Супертоник</string>
-    <string name="settings_engine_supertonic_subtitle">Лучшее качество нейронного синтеза речи (~380 МБ)</string>
-    <string name="settings_engine_supertonic_not_downloaded">~380 MB · не установлено</string>
+    <string name="settings_engine_supertonic_subtitle">Лучшее качество нейронного синтеза речи (~145 МБ)</string>
+    <string name="settings_engine_supertonic_not_downloaded">~145 MB · не установлено</string>
     <string name="settings_voice_language">Язык чтения</string>
     <string name="settings_voice_male">Мужской</string>
     <string name="settings_voice_female">Женский</string>

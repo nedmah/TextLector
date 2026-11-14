@@ -78,8 +78,8 @@
     <string name="settings_engine_piper_title">Piper</string>
     <string name="settings_engine_piper_subtitle">High quality offline neural TTS</string>
     <string name="settings_engine_supertonic_title">Supertonic</string>
-    <string name="settings_engine_supertonic_subtitle">Best quality offline neural TTS (~380 MB)</string>
-    <string name="settings_engine_supertonic_not_downloaded">~380 MB · not downloaded</string>
+    <string name="settings_engine_supertonic_subtitle">Best quality offline neural TTS (~145 MB)</string>
+    <string name="settings_engine_supertonic_not_downloaded">~145 MB · not downloaded</string>
 
     <!-- Voice Model -->
     <string name="voice_model_ready">Voice model ready</string>

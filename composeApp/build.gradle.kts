@@ -28,7 +28,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export(libs.supertonic.kmp)
         }
     }
 
@@ -96,11 +95,9 @@ kotlin {
             implementation(libs.firebase.crashlytics)
             implementation(libs.firebase.analytics)
             implementation(libs.tesseract4android)
-            implementation(libs.supertonic.kmp)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.nativeDriver)
-            api(libs.supertonic.kmp)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -130,20 +127,18 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 130
-        versionName = "1.3.0"
+        versionCode = 140
+        versionName = "1.4.0"
+    }
+    flavorDimensions += "store"
+    productFlavors {
+        create("rustore") { dimension = "store" }
+        create("play") { dimension = "store" }
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        jniLibs {
-            pickFirsts += "lib/arm64-v8a/libonnxruntime.so"
-            pickFirsts += "lib/x86_64/libonnxruntime.so"
-            pickFirsts += "lib/armeabi-v7a/libonnxruntime.so"
-            pickFirsts += "lib/x86/libonnxruntime.so"
-        }
-
     }
     signingConfigs {
         create("release") {
@@ -170,6 +165,7 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    add("rustoreImplementation", libs.rustore.review)
     add("androidMainImplementation", fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
 }
 
@@ -190,7 +186,7 @@ androidComponents {
         variant.outputs.forEach { output ->
             if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
                 val versionName = output.versionName.get() ?: "1.0"
-                output.outputFileName = "TextLector-v${versionName}.apk"
+                output.outputFileName = "TextLector-${variant.flavorName}-v${versionName}.apk"
             }
         }
     }

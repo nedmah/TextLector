@@ -7,6 +7,7 @@ import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
+import com.nedmah.textlector.domain.usecase.RequestReviewIfEligibleUseCase
 import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import kotlinx.coroutines.Job
@@ -33,8 +34,9 @@ class PlayerViewModel(
     private val saveProgressUseCase: SaveProgressUseCase,
     private val updateLastOpenedUseCase: UpdateLastOpenedUseCase,
     private val getPreferencesUseCase: GetPreferencesUseCase,
+    private val requestReviewIfEligibleUseCase: RequestReviewIfEligibleUseCase,
     private val ttsEngine: TtsEngine,
-    private val isBufferingFlow: Flow<Boolean>
+    private val isBufferingFlow: Flow<Boolean>,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerState())
@@ -134,7 +136,7 @@ class PlayerViewModel(
         }
     }
 
-    private fun play() {
+    private fun play(stopCurrent: Boolean = true) {
 
         if (!_state.value.isLoaded) {
             playerLog("[DEBUG] play() aborted: isLoaded=false, paragraphs=${_state.value.paragraphs.size}, document=${_state.value.document?.id}")
@@ -154,21 +156,22 @@ class PlayerViewModel(
 
         val utteranceId = ++currentUtteranceId
         playbackJob?.cancel()
-        ttsEngine.stop()
+        if (stopCurrent) ttsEngine.stop() // natural advance keeps the queue: next paragraph may be prefetched
         _state.update { it.copy(isPlaying = true) }
 
         playbackJob = viewModelScope.launch {
             try {
                 ttsEngine.speak(currentIndex, _state.value.playbackSpeed)
             } catch (e: Exception) {
-                if (e is CancellationException) return@launch
+                // every intentional cancel bumps currentUtteranceId; anything else is a failed speak
+                if (e is CancellationException && utteranceId != currentUtteranceId) return@launch
                 CrashReporter.recordException(e, "speak failed at index=$currentIndex")
                 _state.update { it.copy(isPlaying = false) }
                 return@launch
             }
 
             if (utteranceId == currentUtteranceId) {
-                navigateParagraph(+1)
+                navigateParagraph(+1, fromPlayback = true)
             }
         }
     }
@@ -186,7 +189,7 @@ class PlayerViewModel(
         scheduleSaveProgress(_state.value.currentParagraphIndex)
     }
 
-    private fun navigateParagraph(delta: Int) {
+    private fun navigateParagraph(delta: Int, fromPlayback: Boolean = false) {
         val current = _state.value
         if (current.paragraphs.isEmpty()) return
 
@@ -208,8 +211,11 @@ class PlayerViewModel(
         _state.update { it.copy(currentParagraphIndex = safeIndex) }
         scheduleSaveProgress(safeIndex)
 
-        if (wasPlaying) play()
+        if (wasPlaying) play(stopCurrent = !fromPlayback)
 
+        if (newIndex > current.paragraphs.lastIndex) {
+            requestReview(fromPlayback)
+        }
     }
 
     private fun seekTo(index: Int) {
@@ -241,6 +247,15 @@ class PlayerViewModel(
             val documentId = _state.value.document?.id ?: return@launch
             saveProgressUseCase(documentId, index)
         }
+    }
+
+    private fun requestReview(fromPlayback: Boolean) {
+        pause()
+        viewModelScope.launch {
+            _effect.send(PlayerEffect.PlaybackFinished)
+            if (fromPlayback) requestReviewIfEligibleUseCase()
+        }
+        return
     }
 
     override fun onCleared() {

@@ -32,7 +32,7 @@ private fun log(message: String) {
  * Switches between three engines depending on [UserPreferences.engineType]:
  * - [TtsEngineType.SYSTEM] — Android system TTS, no buffering
  * - [TtsEngineType.PIPER] — offline VITS via sherpa-onnx, with [TtsQueue]
- * - [TtsEngineType.SUPERTONIC] — offline neural TTS via supertonic-kmp, with [TtsQueue]
+ * - [TtsEngineType.SUPERTONIC] — offline neural TTS via sherpa-onnx (Supertonic 3), with [TtsQueue]
  *
  * Both ONNX engines implement [SherpaOnnxTtsEngine] and work through the same
  * [TtsQueue] — prefetches the next paragraph while the current one is playing.

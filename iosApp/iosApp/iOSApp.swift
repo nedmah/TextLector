@@ -7,12 +7,12 @@ struct iOSApp: App {
     init() {
         let repo = IosVoiceModelRepositoryImpl()
         let sherpaEngine = IosSherpaEngine(repository: repo)
-        let supertonicEngine = IosSupertonicEngine()
+        let supertonicRepository = IosSupertonicRepository()
+        let supertonicEngine = IosSupertonicEngine(repository: supertonicRepository)
 
         IosEngineHolder.shared.sherpaEngine = sherpaEngine
         IosEngineHolder.shared.supertonicEngine = supertonicEngine
-        IosEngineHolder.shared.supertonicTts = supertonicEngine.tts
-        SupertonicHolder.shared.bridge = supertonicEngine.bridge
+        IosEngineHolder.shared.supertonicRepository = supertonicRepository
 
         IosEngineHolder.shared.tarExtractor = IosTarExtractor()
         IosEngineHolder.shared.ocrEngine = IosOcrEngine()

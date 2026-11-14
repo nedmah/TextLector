@@ -1,6 +1,6 @@
 package com.nedmah.textlector.domain.repository
 
-import com.nedmah.textlector.domain.model.ModelPath
+import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.ModelState
 import com.nedmah.textlector.domain.model.VoiceId
 import com.nedmah.textlector.domain.model.VoiceModel
@@ -13,7 +13,7 @@ interface VoiceModelRepository {
     fun downloadModel(model: VoiceModel): Flow<ModelState>
 
     // null if not downloaded
-    fun getModelPath(id: VoiceId): ModelPath?
+    fun getModelPath(id: VoiceId): PiperModelPath?
 
     suspend fun deleteModel(id: VoiceId): Result<Unit>
 

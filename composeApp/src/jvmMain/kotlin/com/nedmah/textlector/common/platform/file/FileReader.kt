@@ -10,24 +10,15 @@ import org.apache.pdfbox.text.PDFTextStripper
 import java.io.File
 
 actual class FileReader {
-    actual suspend fun readText(uri: String): Result<String> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                FileSystem.SYSTEM
-                    .source(uri.toPath())
-                    .buffer()
-                    .use { it.readUtf8() }
-            }
-        }
 
-    actual suspend fun readPdf(uri: String): Result<String> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                val document = PDDocument.load(File(uri))
-                val stripper = PDFTextStripper()
-                val text = stripper.getText(document)
-                document.close()
-                text
-            }
-        }
+    actual suspend fun readPdf(
+        uri: String,
+        onProgress: (current: Int, total: Int) -> Unit
+    ): Result<String> {
+        TODO("Not yet implemented")
+    }
+
+    actual suspend fun readBytes(uri: String): Result<ByteArray> {
+        TODO("Not yet implemented")
+    }
 }
