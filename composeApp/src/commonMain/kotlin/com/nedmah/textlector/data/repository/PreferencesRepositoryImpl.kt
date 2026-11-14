@@ -27,6 +27,7 @@ class PreferencesRepositoryImpl(
         const val KEY_DARK_MODE = "dark_mode"
         const val KEY_LANGUAGE = "language"
         const val KEY_ENGINE_TYPE = "engine_type"
+        const val KEY_FINISHED_DOCUMENTS = "finished_documents_count"
     }
 
     override suspend fun setVoiceProfile(type: VoiceGender) =
@@ -57,6 +58,12 @@ class PreferencesRepositoryImpl(
     override suspend fun setEngineType(type: TtsEngineType) =
         withContext(Dispatchers.IO) { settings.putString(KEY_ENGINE_TYPE, type.name) }
 
+    override suspend fun incrementFinishedDocumentsCount(): Int =
+        withContext(Dispatchers.IO) {
+            val count = settings.getInt(KEY_FINISHED_DOCUMENTS, 0) + 1
+            settings.putInt(KEY_FINISHED_DOCUMENTS, count)
+            count
+        }
 
     @OptIn(ExperimentalSettingsApi::class)
     override fun getPreferences(): Flow<UserPreferences> {

@@ -1,9 +1,11 @@
 package com.nedmah.textlector.di
 
 import android.content.Context
+import com.nedmah.textlector.common.platform.review.StoreReviewRequester
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.ocr.AndroidOcrEngine
 import com.nedmah.textlector.common.platform.ocr.OcrEngine
+import com.nedmah.textlector.common.platform.review.ReviewRequester
 import com.nedmah.textlector.common.platform.tts.AndroidSherpaOnnxTtsEngine
 import com.nedmah.textlector.common.platform.tts.AndroidSupertonicTtsEngine
 import com.nedmah.textlector.common.platform.tts.AndroidTtsEngine
@@ -31,6 +33,7 @@ actual val platformModule = module {
 
     single { FileReader(androidContext()) }
     single<OcrEngine> { AndroidOcrEngine(get(), get(), get()) }
+    single<ReviewRequester> { StoreReviewRequester(androidContext()) }
 
     // repository
     single<OcrDataRepository> { AndroidOcrDataRepository(get()) }

@@ -2,6 +2,8 @@ package com.nedmah.textlector.di
 
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.ocr.OcrEngine
+import com.nedmah.textlector.common.platform.review.IosReviewRequester
+import com.nedmah.textlector.common.platform.review.ReviewRequester
 import com.nedmah.textlector.common.platform.tts.IosTtsEngine
 import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
@@ -21,6 +23,8 @@ actual val platformModule = module {
     single<ObservableSettings> { NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults) }
     single { FileReader() }
     single<VoiceModelRepository> { IosVoiceModelRepositoryImpl() }
+    single<ReviewRequester> { IosReviewRequester() }
+
     single<TtsEngine> {
         SwitchableTtsEngine(
             nativeEngine = IosTtsEngine(),

@@ -127,8 +127,13 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 130
-        versionName = "1.3.0"
+        versionCode = 140
+        versionName = "1.4.0"
+    }
+    flavorDimensions += "store"
+    productFlavors {
+        create("rustore") { dimension = "store" }
+        create("play") { dimension = "store" }
     }
     packaging {
         resources {
@@ -160,6 +165,7 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    add("rustoreImplementation", libs.rustore.review)
     add("androidMainImplementation", fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
 }
 
@@ -180,7 +186,7 @@ androidComponents {
         variant.outputs.forEach { output ->
             if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
                 val versionName = output.versionName.get() ?: "1.0"
-                output.outputFileName = "TextLector-v${versionName}.apk"
+                output.outputFileName = "TextLector-${variant.flavorName}-v${versionName}.apk"
             }
         }
     }

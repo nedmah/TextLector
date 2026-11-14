@@ -7,6 +7,7 @@ import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.domain.usecase.GetDocumentUseCase
 import com.nedmah.textlector.domain.usecase.GetParagraphsUseCase
 import com.nedmah.textlector.domain.usecase.GetPreferencesUseCase
+import com.nedmah.textlector.domain.usecase.RequestReviewIfEligibleUseCase
 import com.nedmah.textlector.domain.usecase.SaveProgressUseCase
 import com.nedmah.textlector.domain.usecase.UpdateLastOpenedUseCase
 import kotlinx.coroutines.Job
@@ -33,8 +34,9 @@ class PlayerViewModel(
     private val saveProgressUseCase: SaveProgressUseCase,
     private val updateLastOpenedUseCase: UpdateLastOpenedUseCase,
     private val getPreferencesUseCase: GetPreferencesUseCase,
+    private val requestReviewIfEligibleUseCase: RequestReviewIfEligibleUseCase,
     private val ttsEngine: TtsEngine,
-    private val isBufferingFlow: Flow<Boolean>
+    private val isBufferingFlow: Flow<Boolean>,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerState())
@@ -211,6 +213,9 @@ class PlayerViewModel(
 
         if (wasPlaying) play(stopCurrent = !fromPlayback)
 
+        if (newIndex > current.paragraphs.lastIndex) {
+            requestReview(fromPlayback)
+        }
     }
 
     private fun seekTo(index: Int) {
@@ -242,6 +247,15 @@ class PlayerViewModel(
             val documentId = _state.value.document?.id ?: return@launch
             saveProgressUseCase(documentId, index)
         }
+    }
+
+    private fun requestReview(fromPlayback: Boolean) {
+        pause()
+        viewModelScope.launch {
+            _effect.send(PlayerEffect.PlaybackFinished)
+            if (fromPlayback) requestReviewIfEligibleUseCase()
+        }
+        return
     }
 
     override fun onCleared() {

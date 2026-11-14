@@ -26,6 +26,9 @@ dependencyResolutionManagement {
         }
         mavenCentral()
         maven("https://jitpack.io")
+        maven("https://nexus-external.rustore.ru/repository/maven-rustore-exposed") {
+            content { includeGroupByRegex("ru\\.rustore.*") }
+        }
     }
 }
 
