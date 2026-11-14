@@ -13,7 +13,7 @@ private const val FB2_MIME = "application/x-fictionbook+xml"
 
 @Composable
 actual fun rememberFileLauncher(
-    onResult: (uri: String?, mimeType: String) -> Unit
+    onResult: (uri: String?, mimeType: String, fileName: String?) -> Unit
 ): (mimeType: String) -> Unit {
     val context = LocalContext.current
 
@@ -22,7 +22,12 @@ actual fun rememberFileLauncher(
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
-        onResult(uri?.toString(), uri?.let { context.resolveMimeType(it) }.orEmpty())
+        if (uri == null) {
+            onResult(null, "", null)
+        } else {
+            val name = context.displayName(uri)
+            onResult(uri.toString(), context.resolveMimeType(uri, name), name)
+        }
     }
 
     return { mimeType ->
@@ -35,8 +40,8 @@ actual fun rememberFileLauncher(
 private fun pickerFilter(mimeType: String): Array<String> =
     if (mimeType == FB2_MIME) arrayOf("*/*") else arrayOf(mimeType)
 
-private fun Context.resolveMimeType(uri: Uri): String {
-    val name = displayName(uri)?.lowercase().orEmpty()
+private fun Context.resolveMimeType(uri: Uri, displayName: String?): String {
+    val name = displayName?.lowercase().orEmpty()
     return when {
         name.endsWith(".fb2") -> FB2_MIME
         name.endsWith(".epub") -> "application/epub+zip"

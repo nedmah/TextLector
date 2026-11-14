@@ -11,7 +11,7 @@ import platform.darwin.NSObject
 
 @Composable
 actual fun rememberFileLauncher(
-    onResult: (uri: String?, mimeType: String) -> Unit
+    onResult: (uri: String?, mimeType: String, fileName: String?) -> Unit
 ): (mimeType: String) -> Unit {
 
     val delegateHolder = remember { mutableListOf<NSObject>() }
@@ -30,13 +30,13 @@ actual fun rememberFileLauncher(
                 didPickDocumentsAtURLs: List<*>
             ) {
                 val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
-                onResult(url?.path, mimeType)
+                onResult(url?.path, mimeType, url?.lastPathComponent)
                 delegateHolder.clear()
             }
             override fun documentPickerWasCancelled(
                 controller: UIDocumentPickerViewController
             ) {
-                onResult(null, mimeType)
+                onResult(null, mimeType, null)
                 delegateHolder.clear()
             }
         }
