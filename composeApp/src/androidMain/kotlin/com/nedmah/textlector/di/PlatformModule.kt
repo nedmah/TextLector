@@ -50,12 +50,12 @@ actual val platformModule = module {
     // repository
     single<OcrDataRepository> { AndroidOcrDataRepository(get()) }
     single<VoiceModelRepository> { AndroidVoiceModelRepositoryImpl(androidContext()) }
-    single<SupertonicRepository> { AndroidSupertonicRepositoryImpl(get()) }
+    single<SupertonicRepository> { AndroidSupertonicRepositoryImpl(androidContext()) }
 
     // TTS engines
     single { AndroidTtsEngine(androidContext()) }
     single { AndroidSherpaOnnxTtsEngine(get()) }
-    single { AndroidSupertonicTtsEngine(get<SupertonicTts>()) }
+    single { AndroidSupertonicTtsEngine(get()) }
     single<TtsEngine> {
         SwitchableTtsEngine(
             nativeEngine = get<AndroidTtsEngine>(),
