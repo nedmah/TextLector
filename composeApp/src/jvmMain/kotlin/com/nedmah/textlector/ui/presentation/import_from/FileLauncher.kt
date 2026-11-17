@@ -6,7 +6,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 actual fun rememberFileLauncher(
-    onResult: (uri: String?, mimeType: String) -> Unit
+    onResult: (uri: String?, mimeType: String, fileName: String?) -> Unit
 ): (mimeType: String) -> Unit {
     return { mimeType ->
         val chooser = JFileChooser()
@@ -18,9 +18,9 @@ actual fun rememberFileLauncher(
         chooser.fileFilter = FileNameExtensionFilter(extension.uppercase(), extension)
         val result = chooser.showOpenDialog(null)
         if (result == JFileChooser.APPROVE_OPTION) {
-            onResult(chooser.selectedFile.absolutePath, mimeType)
+            onResult(chooser.selectedFile.absolutePath, mimeType, "")
         } else {
-            onResult(null, mimeType)
+            onResult(null, mimeType, "")
         }
     }
 }
