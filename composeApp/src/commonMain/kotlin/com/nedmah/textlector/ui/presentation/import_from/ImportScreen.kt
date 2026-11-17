@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.model.ImportProgress
+import com.nedmah.textlector.getPlatform
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
@@ -333,13 +334,15 @@ private fun ImportScreen(
                 onClick = { onIntent(ImportIntent.OpenUrlSheet) }
             )
             Spacer(modifier = Modifier.height(8.dp))
-            ImportRowItem(
-                title = stringResource(Res.string.import_from_camera),
-                iconRes = Res.drawable.ic_camera,
-                onClick = { onIntent(ImportIntent.OpenCamera) }
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            if (getPlatform().hasSystemTts) {
+                ImportRowItem(
+                    title = stringResource(Res.string.import_from_camera),
+                    iconRes = Res.drawable.ic_camera,
+                    onClick = { onIntent(ImportIntent.OpenCamera) }
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
 
             // Process button
             Button(
