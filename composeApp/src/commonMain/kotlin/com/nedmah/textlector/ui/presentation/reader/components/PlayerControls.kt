@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,120 +64,120 @@ fun PlayerControls(
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp
     ) {
-        Column {
-
-            PlayerProgressBar(
-                progress = progress,
-                onSeek = onSeek,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = elapsed,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = remaining,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${playbackSpeed}x",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp)
+        Box(contentAlignment = Alignment.TopCenter) {
+            Column(modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth()) {
+                PlayerProgressBar(
+                    progress = progress,
+                    onSeek = onSeek,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(
-                        onClick = onPrevious,
-                        enabled = canGoPrevious && isEnabled
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_skip_prev),
-                            contentDescription = "Previous",
-                            tint = if (canGoPrevious && isEnabled)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable(enabled = isEnabled)
-                            { if (isPlaying) onPause() else onPlay() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else
-                            Crossfade(
-                                targetState = isPlaying,
-                                animationSpec = tween(200)
-                            ) { playing ->
-                                Icon(
-                                    painter = painterResource(
-                                        if (playing) Res.drawable.ic_pause
-                                        else Res.drawable.ic_play
-                                    ),
-                                    contentDescription = if (playing) "Pause" else "Play",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                    }
-
-                    IconButton(
-                        onClick = onNext,
-                        enabled = canGoNext && isEnabled
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_skip_next),
-                            contentDescription = "Next",
-                            tint = if (canGoNext && isEnabled)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
+                    Text(
+                        text = elapsed,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = remaining,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
-                Spacer(modifier = Modifier.width(48.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${playbackSpeed}x",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = onPrevious,
+                            enabled = canGoPrevious && isEnabled
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_skip_prev),
+                                contentDescription = "Previous",
+                                tint = if (canGoPrevious && isEnabled)
+                                    MaterialTheme.colorScheme.onSurface
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable(enabled = isEnabled)
+                                { if (isPlaying) onPause() else onPlay() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else
+                                Crossfade(
+                                    targetState = isPlaying,
+                                    animationSpec = tween(200)
+                                ) { playing ->
+                                    Icon(
+                                        painter = painterResource(
+                                            if (playing) Res.drawable.ic_pause
+                                            else Res.drawable.ic_play
+                                        ),
+                                        contentDescription = if (playing) "Pause" else "Play",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                        }
+
+                        IconButton(
+                            onClick = onNext,
+                            enabled = canGoNext && isEnabled
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_skip_next),
+                                contentDescription = "Next",
+                                tint = if (canGoNext && isEnabled)
+                                    MaterialTheme.colorScheme.onSurface
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(48.dp))
+                }
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

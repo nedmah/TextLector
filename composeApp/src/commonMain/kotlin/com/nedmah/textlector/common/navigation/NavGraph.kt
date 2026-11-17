@@ -134,14 +134,12 @@ fun TextLectorNavGraph() {
                                 }
                             ) { backStackEntry ->
                                 val route = backStackEntry.toRoute<ReaderRoute>()
-                                ReadableWidthBox {
-                                    com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot(
-                                        documentId = route.documentId,
-                                        onNavigateBack = {
-                                            navController.popBackStack()
-                                        }
-                                    )
-                                }
+                                com.nedmah.textlector.ui.presentation.reader.ReaderScreenRoot(
+                                    documentId = route.documentId,
+                                    onNavigateBack = {
+                                        navController.popBackStack()
+                                    }
+                                )
                             }
 
                             composable<SettingsRoute> {
