@@ -7,6 +7,9 @@
     <string name="action_download">Download</string>
     <string name="action_rename">Rename</string>
     <string name="action_see_all">see all</string>
+    <string name="action_more">More actions</string>
+    <string name="action_add_favorite">Add to favorites</string>
+    <string name="action_remove_favorite">Remove from favorites</string>
     <string name="app_name">TextLector</string>
     <string name="made_by">PROJECT WAS MADE BY @NEDMAH</string>
 

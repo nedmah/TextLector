@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
@@ -31,7 +34,9 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +50,14 @@ import com.nedmah.textlector.domain.model.Document
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
+import textlector.composeapp.generated.resources.action_add_favorite
+import textlector.composeapp.generated.resources.action_delete
+import textlector.composeapp.generated.resources.action_more
+import textlector.composeapp.generated.resources.action_remove_favorite
+import textlector.composeapp.generated.resources.action_rename
 import textlector.composeapp.generated.resources.ic_delete
+import textlector.composeapp.generated.resources.ic_edit
+import textlector.composeapp.generated.resources.ic_more_ver
 import textlector.composeapp.generated.resources.ic_star_empty
 import textlector.composeapp.generated.resources.ic_star_filled
 import textlector.composeapp.generated.resources.ic_success
@@ -94,7 +106,9 @@ fun SwipeableDocItem(
         RecentDocItem(
             document = document,
             onClick = onClick,
-            onLongClick = onLongClick
+            onLongClick = onLongClick,
+            onFavorite = onFavorite,
+            onDelete = onDelete,
         )
     }
 
@@ -150,7 +164,9 @@ private fun FavoriteBackground(isFavorite: Boolean) {
 private fun RecentDocItem(
     document: Document,
     onClick: () -> Unit,
-    onLongClick: () -> Unit
+    onLongClick: () -> Unit,
+    onFavorite: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val progress = if (document.totalParagraphs > 0) {
         document.lastParagraphIndex.toFloat() / document.totalParagraphs
@@ -215,6 +231,13 @@ private fun RecentDocItem(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                DocActionsMenu(
+                    isFavorite = document.isFavorite,
+                    onRename = onLongClick,
+                    onFavorite = onFavorite,
+                    onDelete = onDelete,
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -252,3 +275,64 @@ private fun RecentDocItem(
     }
 }
 
+@Composable
+private fun DocActionsMenu(
+    isFavorite: Boolean,
+    onRename: () -> Unit,
+    onFavorite: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_more_ver),
+                contentDescription = stringResource(Res.string.action_more),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.action_rename)) },
+                leadingIcon = {
+                    Icon(painterResource(Res.drawable.ic_edit), null, Modifier.size(20.dp))
+                },
+                onClick = { expanded = false; onRename() }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        stringResource(
+                            if (isFavorite) Res.string.action_remove_favorite
+                            else Res.string.action_add_favorite
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        painterResource(
+                            if (isFavorite) Res.drawable.ic_star_filled else Res.drawable.ic_star_empty
+                        ),
+                        null,
+                        Modifier.size(20.dp)
+                    )
+                },
+                onClick = { expanded = false; onFavorite() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error) },
+                leadingIcon = {
+                    Icon(
+                        painterResource(Res.drawable.ic_delete),
+                        null,
+                        Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                onClick = { expanded = false; onDelete() }
+            )
+        }
+    }
+}
