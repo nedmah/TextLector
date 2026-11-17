@@ -21,22 +21,6 @@ import kotlinx.coroutines.flow.flowOf
 
 private const val NOT_YET = "Not available on desktop yet"
 
-internal class StubVoiceModelRepository : VoiceModelRepository {
-    override fun getModelState(id: VoiceId): Flow<ModelState> = flowOf(ModelState.NotDownloaded)
-    override fun downloadModel(model: VoiceModel): Flow<ModelState> = flowOf(ModelState.Error(NOT_YET))
-    override fun getModelPath(id: VoiceId): PiperModelPath? = null
-    override suspend fun deleteModel(id: VoiceId): Result<Unit> = Result.success(Unit)
-    override fun isEspeakDataReady(): Boolean = false
-}
-
-internal class StubSupertonicRepository : SupertonicRepository {
-    override val downloadState: StateFlow<SupertonicModelState> =
-        MutableStateFlow(SupertonicModelState.NotDownloaded)
-    override fun download(): Flow<SupertonicModelState> = flowOf(SupertonicModelState.Error(NOT_YET))
-    override fun deleteModel() = Unit
-    override fun getModelPaths(): SupertonicModelPaths? = null
-}
-
 internal class StubOcrDataRepository : OcrDataRepository {
     override fun getState(): Flow<ModelState> = flowOf(ModelState.NotDownloaded)
     override suspend fun download(): Flow<ModelState> = flowOf(ModelState.Error(NOT_YET))

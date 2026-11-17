@@ -1,5 +1,6 @@
 package com.nedmah.textlector.di
 
+import com.nedmah.textlector.common.platform.file.AppDirs
 import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.ocr.OcrEngine
 import com.nedmah.textlector.common.platform.review.DesktopReviewRequester
@@ -7,6 +8,8 @@ import com.nedmah.textlector.common.platform.review.ReviewRequester
 import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
+import com.nedmah.textlector.data.repository.FileSupertonicRepository
+import com.nedmah.textlector.data.repository.FileVoiceModelRepository
 import com.nedmah.textlector.domain.repository.OcrDataRepository
 import com.nedmah.textlector.domain.repository.SupertonicRepository
 import com.nedmah.textlector.domain.repository.VoiceModelRepository
@@ -27,8 +30,8 @@ actual val platformModule = module {
 
     // repository
     single<OcrDataRepository> { StubOcrDataRepository() }
-    single<VoiceModelRepository> { StubVoiceModelRepository() }
-    single<SupertonicRepository> { StubSupertonicRepository() }
+    single<VoiceModelRepository> { FileVoiceModelRepository(AppDirs.dataDir) }
+    single<SupertonicRepository> { FileSupertonicRepository(AppDirs.dataDir) }
 
     // TTS engines
     single<TtsEngine> {
