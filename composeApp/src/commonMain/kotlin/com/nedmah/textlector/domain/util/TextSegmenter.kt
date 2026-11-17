@@ -5,10 +5,13 @@ object TextSegmenter {
     private const val MIN_PARAGRAPHS = 3
     private const val MAX_WORDS_PER_PARAGRAPH = 100
     private const val MIN_WORDS_PER_PARAGRAPH = 20
+    private const val HARD_WRAP_MIN_LINE = 30
+    private const val HARD_WRAP_MAX_LINE = 130
+    private const val SHORT_LINE_RATIO = 0.75
 
     fun segment(text: String): List<String> {
 
-        val cleaned = clean(text)
+        val cleaned = unwrapHardLines(clean(text))
 
         val byDoubleNewline = cleaned.split("\n\n")
             .asSequence()
@@ -50,6 +53,29 @@ object TextSegmenter {
             .replace(Regex("\\n{3,}"), "\n\n") // 3+ empty strings
             .replace(Regex("(?m)^\\s*\\d+\\s*$"), "") // when only nums
             .trim()
+    }
+
+    private fun unwrapHardLines(text: String): String {
+        val lines = text.lines().map { it.trim() }
+        val lengths = lines.filter { it.isNotEmpty() }.map { it.length }.sorted()
+        if (lengths.size < MIN_PARAGRAPHS) return text
+
+        val typical = lengths[(lengths.size * 0.8).toInt().coerceAtMost(lengths.lastIndex)]
+        if (typical !in HARD_WRAP_MIN_LINE..HARD_WRAP_MAX_LINE) return text
+
+        val result = StringBuilder()
+        lines.forEachIndexed { i, line ->
+            result.append(line)
+            if (i == lines.lastIndex) return@forEachIndexed
+            val next = lines[i + 1]
+            when {
+                line.isEmpty() || next.isEmpty() -> result.append('\n')
+                line.length < typical * SHORT_LINE_RATIO -> result.append('\n')
+                line.endsWith('-') -> Unit
+                else -> result.append(' ')
+            }
+        }
+        return result.toString()
     }
 
     private fun mergeShortParagraphs(paragraphs: List<String>): List<String> {
