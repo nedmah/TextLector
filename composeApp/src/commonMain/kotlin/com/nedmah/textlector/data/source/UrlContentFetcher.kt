@@ -5,6 +5,11 @@ import com.fleeksoft.ksoup.network.parseGetRequest
 
 class UrlContentFetcher {
 
+    private companion object {
+        val BLOCK_TAGS = setOf("h1", "h2", "h3", "h4", "h5", "h6", "p", "li", "blockquote", "pre")
+        val BLOCK_SELECTOR = BLOCK_TAGS.joinToString(", ")
+    }
+
     suspend fun fetchText(url : String) : Result<Pair<String, String>> = runCatching {
         val doc = Ksoup.parseGetRequest(url)
 
@@ -25,7 +30,17 @@ class UrlContentFetcher {
             doc.selectFirst(".content, .post, .entry, .article-body") ?:
             doc.selectFirst("body")
 
-        val text = contentElement?.wholeText() ?: doc.body().wholeText()
+        val blocks = contentElement
+            ?.select(BLOCK_SELECTOR)
+            ?.filter { el -> el.parents().none { it.normalName() in BLOCK_TAGS } }
+            ?.map { it.text().trim() }
+            ?.filter { it.isNotEmpty() }
+            .orEmpty()
+
+        val blockText = blocks.joinToString("\n\n")
+        val wholeText = (contentElement?.wholeText() ?: doc.body().wholeText()).trim()
+
+        val text = if (blockText.length >= wholeText.length / 2) blockText else wholeText
 
         if (text.isBlank()) error("No readable content found at $url")
 

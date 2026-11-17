@@ -92,7 +92,7 @@ object TextSegmenter {
                         result.add(current.trim().toString())
                         current.clear()
                     }
-                    current.append(paragraph).append(" ")
+                    result.add(paragraph)
                 }
                 isShort -> {
                     current.append(paragraph).append(" ")
