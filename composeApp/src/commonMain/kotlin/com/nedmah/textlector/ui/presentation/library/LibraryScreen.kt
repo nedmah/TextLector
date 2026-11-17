@@ -236,7 +236,7 @@ private fun LibraryScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { stringResource(Res.string.library_sort_date_added) },
+                                text = { Text(stringResource(Res.string.library_sort_date_added)) },
                                 onClick = {
                                     onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.CREATED_AT))
                                     sortMenuExpanded = false
