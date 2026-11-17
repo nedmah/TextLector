@@ -65,16 +65,6 @@ object AndroidTrackPlayer {
         if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.stop()
     }
 
-    internal fun samplesToWav(samples: FloatArray, sampleRate: Int): ByteArray {
-        val pcm = ByteArray(samples.size * 2)
-        samples.forEachIndexed { i, sample ->
-            val s = (sample.coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort()
-            pcm[i * 2] = (s.toInt() and 0xFF).toByte()
-            pcm[i * 2 + 1] = (s.toInt() shr 8 and 0xFF).toByte()
-        }  // multiply every sample by 32767 for pcm16 format
-        return buildWavHeader(sampleRate, pcm.size) + pcm
-    }
-
     private fun wavToSamples(wav: ByteArray): FloatArray {
         val dataOffset = 44 // we skip WAV header (first 44 bytes)
         if (wav.size <= dataOffset) return FloatArray(0)
@@ -91,25 +81,5 @@ object AndroidTrackPlayer {
                 (wav[25].toInt() and 0xFF shl 8) or
                 (wav[26].toInt() and 0xFF shl 16) or
                 (wav[27].toInt() and 0xFF shl 24)
-    }
-
-    private fun buildWavHeader(sampleRate: Int, dataSize: Int): ByteArray {
-        val totalSize = dataSize + 36
-        return byteArrayOf(
-            'R'.code.toByte(), 'I'.code.toByte(), 'F'.code.toByte(), 'F'.code.toByte(),
-            (totalSize and 0xFF).toByte(), (totalSize shr 8 and 0xFF).toByte(),
-            (totalSize shr 16 and 0xFF).toByte(), (totalSize shr 24 and 0xFF).toByte(),
-            'W'.code.toByte(), 'A'.code.toByte(), 'V'.code.toByte(), 'E'.code.toByte(),
-            'f'.code.toByte(), 'm'.code.toByte(), 't'.code.toByte(), ' '.code.toByte(),
-            16, 0, 0, 0, 1, 0, 1, 0,
-            (sampleRate and 0xFF).toByte(), (sampleRate shr 8 and 0xFF).toByte(),
-            (sampleRate shr 16 and 0xFF).toByte(), (sampleRate shr 24 and 0xFF).toByte(),
-            (sampleRate * 2 and 0xFF).toByte(), (sampleRate * 2 shr 8 and 0xFF).toByte(),
-            (sampleRate * 2 shr 16 and 0xFF).toByte(), (sampleRate * 2 shr 24 and 0xFF).toByte(),
-            2, 0, 16, 0,
-            'd'.code.toByte(), 'a'.code.toByte(), 't'.code.toByte(), 'a'.code.toByte(),
-            (dataSize and 0xFF).toByte(), (dataSize shr 8 and 0xFF).toByte(),
-            (dataSize shr 16 and 0xFF).toByte(), (dataSize shr 24 and 0xFF).toByte()
-        )
     }
 }

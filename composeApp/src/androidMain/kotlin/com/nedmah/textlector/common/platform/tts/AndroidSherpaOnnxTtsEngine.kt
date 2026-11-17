@@ -6,6 +6,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsVitsModelConfig
 import com.nedmah.textlector.common.platform.logging.CrashReporter
+import com.nedmah.textlector.common.platfrom.tts.WavCodec
 import com.nedmah.textlector.domain.model.PiperModelPath
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.VoiceId
@@ -79,7 +80,7 @@ class AndroidSherpaOnnxTtsEngine(
                 val audio = ttsMutex.withLock {
                     tts?.generate(text = text, sid = 0, speed = speed)
                 } ?: return@withContext ByteArray(0)
-                AndroidTrackPlayer.samplesToWav(audio.samples, audio.sampleRate)
+                WavCodec.fromSamples(audio.samples, audio.sampleRate)
             } catch (e: Exception) {
                 CrashReporter.recordException(e, "generate failed")
                 ByteArray(0)

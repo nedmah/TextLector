@@ -5,6 +5,7 @@ import com.nedmah.textlector.common.platform.file.FileReader
 import com.nedmah.textlector.common.platform.ocr.OcrEngine
 import com.nedmah.textlector.common.platform.review.DesktopReviewRequester
 import com.nedmah.textlector.common.platform.review.ReviewRequester
+import com.nedmah.textlector.common.platform.tts.DesktopPiperTtsEngine
 import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
@@ -34,10 +35,11 @@ actual val platformModule = module {
     single<SupertonicRepository> { FileSupertonicRepository(AppDirs.dataDir) }
 
     // TTS engines
+    single { DesktopPiperTtsEngine(get()) }
     single<TtsEngine> {
         SwitchableTtsEngine(
             nativeEngine = SilentTtsEngine(),
-            sherpaEngine = SilentTtsEngine(),
+            sherpaEngine = get<DesktopPiperTtsEngine>(),
             supertonicEngine = SilentTtsEngine(),
             preferencesRepository = get(),
         )

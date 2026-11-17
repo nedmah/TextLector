@@ -19,6 +19,17 @@ val localProps = Properties().apply {
     rootProject.file("local.properties").inputStream().use { load(it) }
 }
 
+// sherpa-onnx libs for the OS that builds and runs the desktop app
+val sherpaNativeClassifier: String = run {
+    val os = System.getProperty("os.name").lowercase()
+    val arch = System.getProperty("os.arch").lowercase()
+    when {
+        os.contains("mac") && (arch == "aarch64" || arch == "arm64") -> "osx-aarch64"
+        os.contains("win") -> "win-x64"
+        else -> error("Desktop build is not supported on $os/$arch")
+    }
+}
+
 kotlin {
     
     listOf(
@@ -114,10 +125,13 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
+            val sherpaVersion = libs.versions.sherpaOnnx.get()
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.jvmDriver)
             implementation(libs.pdfbox.jvm)
+            implementation(files("libs/desktop/sherpa-onnx-jvm-$sherpaVersion.jar"))
+            implementation(files("libs/desktop/sherpa-onnx-native-lib-$sherpaNativeClassifier-$sherpaVersion.jar"))
         }
     }
 
