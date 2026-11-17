@@ -16,7 +16,7 @@ plugins {
 
 
 val localProps = Properties().apply {
-    rootProject.file("local.properties").inputStream().use { load(it) }
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
 // sherpa-onnx libs for the OS that builds and runs the desktop app
@@ -152,8 +152,8 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 140
-        versionName = "1.4.0"
+        versionCode = 150
+        versionName = "1.5.0"
     }
     flavorDimensions += "store"
     productFlavors {
@@ -199,9 +199,25 @@ compose.desktop {
         mainClass = "com.nedmah.textlector.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.nedmah.textlector"
-            packageVersion = "1.0.0"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi)
+            packageName = "TextLector"
+            packageVersion = "1.5.0"
+            description = "Offline text-to-speech reader"
+            vendor = "nedmah"
+            modules("java.instrument", "java.management", "java.naming", "java.prefs", "java.sql", "jdk.unsupported")
+
+            macOS {
+                bundleID = "com.nedmah.textlector"
+                iconFile.set(project.file("icons/icon.icns"))
+            }
+            windows {
+                iconFile.set(project.file("icons/icon.ico"))
+                upgradeUuid = "272b20d4-5f54-4531-a3ba-f42bb3421712"
+                menuGroup = "TextLector"
+                shortcut = true
+                perUserInstall = true
+                dirChooser = true
+            }
         }
     }
 }
