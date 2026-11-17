@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
+import com.nedmah.textlector.ui.presentation.components.LocalWideLayout
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import textlector.composeapp.generated.resources.Res
@@ -172,8 +174,6 @@ private fun RecentDocItem(
         document.lastParagraphIndex.toFloat() / document.totalParagraphs
     } else 0f
 
-    val isCompleted = progress >= 1f
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -209,66 +209,68 @@ private fun RecentDocItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
 
-                DocTypeIcon(sourceType = document.sourceType)
+            val isWide = LocalWideLayout.current
 
-                Column(modifier = Modifier.weight(1f)) {
+            if (isWide) {
+                // desktop: everything in one row
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    DocTypeIcon(sourceType = document.sourceType)
                     Text(
                         text = document.title,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
-                }
-
-                Text(
-                    text = stringResource(Res.string.library_reading_time, document.estimatedReadingMinutes),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                DocActionsMenu(
-                    isFavorite = document.isFavorite,
-                    onRename = onLongClick,
-                    onFavorite = onFavorite,
-                    onDelete = onDelete,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.outline
-                )
-
-                if (isCompleted) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_success),
-                        contentDescription = "Completed",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                } else {
                     Text(
-                        text = "${(progress * 100).toInt()}%",
+                        text = stringResource(Res.string.library_reading_time, document.estimatedReadingMinutes),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    DocProgress(progress = progress, modifier = Modifier.width(220.dp))
+                    DocActionsMenu(
+                        isFavorite = document.isFavorite,
+                        onRename = onLongClick,
+                        onFavorite = onFavorite,
+                        onDelete = onDelete,
+                    )
+                }
+            } else {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        DocTypeIcon(sourceType = document.sourceType)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = document.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Text(
+                            text = stringResource(Res.string.library_reading_time, document.estimatedReadingMinutes),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        DocActionsMenu(
+                            isFavorite = document.isFavorite,
+                            onRename = onLongClick,
+                            onFavorite = onFavorite,
+                            onDelete = onDelete,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    DocProgress(progress = progress)
                 }
             }
         }
@@ -332,6 +334,39 @@ private fun DocActionsMenu(
                     )
                 },
                 onClick = { expanded = false; onDelete() }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DocProgress(progress: Float, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .weight(1f)
+                .height(3.dp)
+                .clip(RoundedCornerShape(2.dp)),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.outline
+        )
+        if (progress >= 1f) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_success),
+                contentDescription = "Completed",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+        } else {
+            Text(
+                text = "${(progress * 100).toInt()}%",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

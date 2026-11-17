@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.model.DocumentSortOrder
+import com.nedmah.textlector.ui.presentation.components.LocalWideLayout
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.library.components.FavoriteDocItem
 import com.nedmah.textlector.ui.presentation.library.components.LibrarySkeletonScreen
@@ -132,150 +134,159 @@ private fun LibraryScreen(
     state: LibraryState,
     onIntent: (LibraryIntent) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp) // for MiniPlayer
-    ) {
+    val isWide = LocalWideLayout.current
 
-        item {
-            TopBar(
-                onSearchClick = { /* later search */ }
-            )
-        }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 1100.dp)
+                .padding(horizontal = if (isWide) 20.dp else 0.dp),
+            contentPadding = PaddingValues(bottom = 80.dp) // for MiniPlayer
+        ) {
 
-        item {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(
-                    text = stringResource(Res.string.library_title),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = pluralStringResource(Res.plurals.library_collection_size, state.recentDocs.size, state.recentDocs.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // Favorites
-        if (state.favoriteDocs.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(28.dp))
-                SectionHeader(
-                    title = stringResource(Res.string.library_favorite_docs),
-                    onAction = { /* navigation */ },
-                    trailingContent = {
-                        Text(
-                            text = stringResource(Res.string.action_see_all),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(
-                        items = state.favoriteDocs,
-                        key = { it.id }
-                    ) { document ->
-                        FavoriteDocItem(
-                            document = document,
-                            onClick = {
-                                onIntent(LibraryIntent.SelectDocument(document.id))
-                            },
-                            onToggleFavorite = {
-                                onIntent(LibraryIntent.ToggleFavorite(document.id, false))
-                            },
-                            modifier = Modifier.animateItem()
-                        )
-                    }
+                if (isWide) Spacer(modifier = Modifier.height(32.dp)) else TopBar(onSearchClick = { /* later search */ })
+            }
+
+            item {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Text(
+                        text = stringResource(Res.string.library_title),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = pluralStringResource(
+                            Res.plurals.library_collection_size,
+                            state.recentDocs.size,
+                            state.recentDocs.size
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-        }
 
-        // Recent Documents
-        item {
-            Spacer(modifier = Modifier.height(28.dp))
-
-            var sortMenuExpanded by remember { mutableStateOf(false) }
-
-            SectionHeader(
-                title = stringResource(Res.string.library_recent_docs),
-                onAction = null,
-                trailingContent = {
-                    Box {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_sort),
-                            contentDescription = null,
-                            modifier = Modifier.clickable { sortMenuExpanded = true }
-                        )
-                        DropdownMenu(
-                            expanded = sortMenuExpanded,
-                            onDismissRequest = { sortMenuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { stringResource(Res.string.library_sort_last_opened) },
-                                onClick = {
-                                    onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.LAST_OPENED))
-                                    sortMenuExpanded = false
-                                },
-                                trailingIcon = {
-                                    if (state.sortOrder == DocumentSortOrder.LAST_OPENED) {
-                                        Icon(
-                                            modifier = Modifier.size(12.dp),
-                                            painter = painterResource(Res.drawable.ic_success),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
+            // Favorites
+            if (state.favoriteDocs.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(28.dp))
+                    SectionHeader(
+                        title = stringResource(Res.string.library_favorite_docs),
+                        onAction = { /* navigation */ },
+                        trailingContent = {
+                            Text(
+                                text = stringResource(Res.string.action_see_all),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(Res.string.library_sort_date_added)) },
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            items = state.favoriteDocs,
+                            key = { it.id }
+                        ) { document ->
+                            FavoriteDocItem(
+                                document = document,
                                 onClick = {
-                                    onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.CREATED_AT))
-                                    sortMenuExpanded = false
+                                    onIntent(LibraryIntent.SelectDocument(document.id))
                                 },
-                                trailingIcon = {
-                                    if (state.sortOrder == DocumentSortOrder.CREATED_AT) {
-                                        Icon(
-                                            painter = painterResource(Res.drawable.ic_success),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
+                                onToggleFavorite = {
+                                    onIntent(LibraryIntent.ToggleFavorite(document.id, false))
+                                },
+                                cardWidth = if (isWide) 240.dp else 160.dp,
+                                modifier = Modifier.animateItem()
                             )
                         }
                     }
                 }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-        }
+            }
 
-        items(
-            items = state.recentDocs,
-            key = { it.id }
-        ) { document ->
+            // Recent Documents
+            item {
+                Spacer(modifier = Modifier.height(28.dp))
 
-            SwipeableDocItem(
-                document = document,
-                onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
-                onLongClick = { onIntent(LibraryIntent.OpenRenameDialog(document)) },
-                onDelete = { onIntent(LibraryIntent.RequestDelete(document.id)) },
-                onFavorite = {
-                    onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
-                },
-                modifier = Modifier.animateItem()
-            )
+                var sortMenuExpanded by remember { mutableStateOf(false) }
+
+                SectionHeader(
+                    title = stringResource(Res.string.library_recent_docs),
+                    onAction = null,
+                    trailingContent = {
+                        Box {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_sort),
+                                contentDescription = null,
+                                modifier = Modifier.clickable { sortMenuExpanded = true }
+                            )
+                            DropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { stringResource(Res.string.library_sort_last_opened) },
+                                    onClick = {
+                                        onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.LAST_OPENED))
+                                        sortMenuExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        if (state.sortOrder == DocumentSortOrder.LAST_OPENED) {
+                                            Icon(
+                                                modifier = Modifier.size(12.dp),
+                                                painter = painterResource(Res.drawable.ic_success),
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.library_sort_date_added)) },
+                                    onClick = {
+                                        onIntent(LibraryIntent.ChangeSortType(DocumentSortOrder.CREATED_AT))
+                                        sortMenuExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        if (state.sortOrder == DocumentSortOrder.CREATED_AT) {
+                                            Icon(
+                                                painter = painterResource(Res.drawable.ic_success),
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            items(
+                items = state.recentDocs,
+                key = { it.id }
+            ) { document ->
+
+                SwipeableDocItem(
+                    document = document,
+                    onClick = { onIntent(LibraryIntent.SelectDocument(document.id)) },
+                    onLongClick = { onIntent(LibraryIntent.OpenRenameDialog(document)) },
+                    onDelete = { onIntent(LibraryIntent.RequestDelete(document.id)) },
+                    onFavorite = {
+                        onIntent(LibraryIntent.ToggleFavorite(document.id, !document.isFavorite))
+                    },
+                    modifier = Modifier.animateItem()
+                )
+            }
         }
     }
-
 }
 
 @Composable

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -31,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -42,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.model.ImportProgress
 import com.nedmah.textlector.getPlatform
+import com.nedmah.textlector.ui.presentation.components.LocalWideLayout
 import com.nedmah.textlector.ui.presentation.components.TopBar
 import com.nedmah.textlector.ui.presentation.import_from.components.FileTypeCard
 import com.nedmah.textlector.ui.presentation.import_from.components.ImportRowItem
@@ -50,6 +54,7 @@ import com.nedmah.textlector.ui.presentation.import_from.components.ManualTextIn
 import com.nedmah.textlector.ui.presentation.import_from.components.OcrDownloadDialog
 import com.nedmah.textlector.ui.presentation.import_from.components.UrlImportSheet
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import textlector.composeapp.generated.resources.Res
@@ -71,6 +76,8 @@ import textlector.composeapp.generated.resources.import_section_manual
 import textlector.composeapp.generated.resources.import_subtitle
 import textlector.composeapp.generated.resources.import_title
 import textlector.composeapp.generated.resources.made_by
+
+private typealias FileTypeAction = Pair<Triple<String, String, DrawableResource>, () -> Unit>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,6 +196,7 @@ private fun ImportScreen(
 ) {
 
     val focusManager = LocalFocusManager.current
+    val isWide = LocalWideLayout.current
 
     val fileTypes = listOf(
         Triple(
@@ -219,11 +227,17 @@ private fun ImportScreen(
             .verticalScroll(rememberScrollState())
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { focusManager.clearFocus() })
-            }
+            },
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TopBar(onSearchClick = {})
+        if (isWide) Spacer(modifier = Modifier.height(32.dp)) else TopBar(onSearchClick = {})
 
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 1100.dp)
+                .fillMaxWidth()
+                .padding(horizontal = if (isWide) 40.dp else 20.dp)
+        ) {
 
             Text(
                 text = stringResource(Res.string.import_title),
@@ -239,39 +253,77 @@ private fun ImportScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Manual transcription
-            Text(
-                text = stringResource(Res.string.import_section_manual),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            if (isWide) {
+                Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+                    Column(modifier = Modifier.weight(1.4f)) {
+                        ManualSection(state, onIntent, inputModifier = Modifier.height(360.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        ProcessButton(state, onIntent, Modifier.align(Alignment.End).width(240.dp))
+                        MadeByLabel(
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .width(240.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        FilesSection(fileTypes, asGrid = true)
+                        ImportProgressBar(state.importProgress)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SourceRows(onIntent)
+                    }
+                }
+            } else {
+                ManualSection(state, onIntent)
+                Spacer(modifier = Modifier.height(28.dp))
+                FilesSection(fileTypes, asGrid = false)
+                ImportProgressBar(state.importProgress)
+                Spacer(modifier = Modifier.height(12.dp))
+                SourceRows(onIntent)
+                Spacer(modifier = Modifier.height(32.dp))
+                ProcessButton(state, onIntent, Modifier.fillMaxWidth())
+                MadeByLabel(modifier = Modifier.fillMaxWidth())
+            }
 
-            ManualTextInput(
-                text = state.manualText,
-                onTextChange = { onIntent(ImportIntent.EnterText(it)) }
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(28.dp))
+        }
+    }
+}
 
-            // Import Files
-            Text(
-                text = stringResource(Res.string.import_section_files),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(end = 20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                items(fileTypes) { (info, onClick) ->
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+@Composable
+private fun ManualSection(
+    state: ImportState,
+    onIntent: (ImportIntent) -> Unit,
+    inputModifier: Modifier = Modifier,
+) {
+    SectionLabel(stringResource(Res.string.import_section_manual))
+    Spacer(modifier = Modifier.height(8.dp))
+    ManualTextInput(
+        text = state.manualText,
+        onTextChange = { onIntent(ImportIntent.EnterText(it)) },
+        modifier = inputModifier
+    )
+}
+
+@Composable
+private fun FilesSection(fileTypes: List<FileTypeAction>, asGrid: Boolean) {
+    SectionLabel(stringResource(Res.string.import_section_files))
+    Spacer(modifier = Modifier.height(8.dp))
+    if (asGrid) {
+        fileTypes.chunked(2).forEach { rowItems ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                rowItems.forEach { (info, onClick) ->
                     FileTypeCard(
-                        modifier = Modifier
-                            .width(150.dp)
-                            .height(160.dp),
+                        modifier = Modifier.weight(1f).height(140.dp),
                         title = info.first,
                         subtitle = info.second,
                         iconRes = info.third,
@@ -279,135 +331,146 @@ private fun ImportScreen(
                     )
                 }
             }
-
-            when (val progress = state.importProgress) {
-                is ImportProgress.Processing -> {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(Res.string.import_reading_pages, progress.current, progress.total),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LinearProgressIndicator(
-                            progress = { progress.current.toFloat() / progress.total },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(3.dp)
-                                .clip(RoundedCornerShape(2.dp)),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    }
-                }
-
-                is ImportProgress.Segmenting -> {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(Res.string.import_analyzing_text),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LinearProgressIndicator( // indeterminate
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(3.dp)
-                                .clip(RoundedCornerShape(2.dp)),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    }
-                }
-
-                else -> {}
-            }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            // Url and camera
-            ImportRowItem(
-                title = stringResource(Res.string.import_from_url),
-                iconRes = Res.drawable.ic_url,
-                onClick = { onIntent(ImportIntent.OpenUrlSheet) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (getPlatform().hasSystemTts) {
-                ImportRowItem(
-                    title = stringResource(Res.string.import_from_camera),
-                    iconRes = Res.drawable.ic_camera,
-                    onClick = { onIntent(ImportIntent.OpenCamera) }
+        }
+    } else {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(end = 20.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(fileTypes) { (info, onClick) ->
+                FileTypeCard(
+                    modifier = Modifier.width(150.dp).height(160.dp),
+                    title = info.first,
+                    subtitle = info.second,
+                    iconRes = info.third,
+                    onClick = onClick
                 )
-                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            // Process button
-            Button(
-                onClick = {
-                    if (state.manualText.isNotBlank()) {
-                        onIntent(ImportIntent.ImportManually)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = !state.isLoading && state.manualText.isNotBlank(),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                when (val progress = state.importProgress) {
-                    is ImportProgress.Processing -> {
-                        Text(
-                            text = stringResource(Res.string.import_pages_progress,progress.current, progress.total),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                    }
-
-                    is ImportProgress.Segmenting -> {
-                        Text(
-                            text = stringResource(Res.string.import_analyzing),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                    }
-
-                    else -> {
-                        if (state.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = stringResource(Res.string.import_process_button),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(Res.string.made_by),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-
         }
     }
+}
 
+@Composable
+private fun SourceRows(onIntent: (ImportIntent) -> Unit) {
+    ImportRowItem(
+        title = stringResource(Res.string.import_from_url),
+        iconRes = Res.drawable.ic_url,
+        onClick = { onIntent(ImportIntent.OpenUrlSheet) }
+    )
+    if (getPlatform().hasCamera) {
+        Spacer(modifier = Modifier.height(8.dp))
+        ImportRowItem(
+            title = stringResource(Res.string.import_from_camera),
+            iconRes = Res.drawable.ic_camera,
+            onClick = { onIntent(ImportIntent.OpenCamera) }
+        )
+    }
+}
+
+@Composable
+private fun ImportProgressBar(progress: ImportProgress?) {
+    when (progress) {
+        is ImportProgress.Processing -> {
+            Spacer(modifier = Modifier.height(12.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(Res.string.import_reading_pages, progress.current, progress.total),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LinearProgressIndicator(
+                    progress = { progress.current.toFloat() / progress.total },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        }
+
+        is ImportProgress.Segmenting -> {
+            Spacer(modifier = Modifier.height(12.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(Res.string.import_analyzing_text),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LinearProgressIndicator( // indeterminate
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        }
+
+        else -> {}
+    }
+}
+
+@Composable
+private fun ProcessButton(
+    state: ImportState,
+    onIntent: (ImportIntent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = {
+            if (state.manualText.isNotBlank()) onIntent(ImportIntent.ImportManually)
+        },
+        modifier = modifier.height(56.dp),
+        enabled = !state.isLoading && state.manualText.isNotBlank(),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        when (val progress = state.importProgress) {
+            is ImportProgress.Processing -> Text(
+                text = stringResource(Res.string.import_pages_progress, progress.current, progress.total),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White
+            )
+
+            is ImportProgress.Segmenting -> Text(
+                text = stringResource(Res.string.import_analyzing),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White
+            )
+
+            else -> {
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = stringResource(Res.string.import_process_button),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MadeByLabel(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(Res.string.made_by),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.padding(top = 8.dp),
+        textAlign = TextAlign.Center
+    )
 }

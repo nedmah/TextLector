@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.nedmah.textlector.domain.model.Document
 import org.jetbrains.compose.resources.painterResource
@@ -29,11 +30,12 @@ fun FavoriteDocItem(
     document: Document,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cardWidth: Dp = 160.dp,
 ) {
     Card(
         modifier = modifier
-            .width(160.dp)
+            .width(cardWidth)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(

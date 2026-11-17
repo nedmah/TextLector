@@ -99,26 +99,22 @@ fun TextLectorNavGraph() {
                             popExitTransition = { ExitTransition.None }
                         ) {
                             composable<LibraryRoute> {
-                                ReadableWidthBox {
-                                    com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot(
-                                        onNavigateToReader = { documentId ->
-                                            navController.navigate(ReaderRoute(documentId))
-                                        },
-                                        onNavigateToImport = {
-                                            navController.navigate(ImportRoute)
-                                        }
-                                    )
-                                }
+                                com.nedmah.textlector.ui.presentation.library.LibraryScreenRoot(
+                                    onNavigateToReader = { documentId ->
+                                        navController.navigate(ReaderRoute(documentId))
+                                    },
+                                    onNavigateToImport = {
+                                        navController.navigate(ImportRoute)
+                                    }
+                                )
                             }
 
                             composable<ImportRoute> {
-                                ReadableWidthBox {
-                                    com.nedmah.textlector.ui.presentation.import_from.ImportScreenRoot(
-                                        onNavigateToReader = { documentId ->
-                                            navController.navigate(ReaderRoute(documentId))
-                                        }
-                                    )
-                                }
+                                com.nedmah.textlector.ui.presentation.import_from.ImportScreenRoot(
+                                    onNavigateToReader = { documentId ->
+                                        navController.navigate(ReaderRoute(documentId))
+                                    }
+                                )
                             }
 
                             composable<ReaderRoute>(
