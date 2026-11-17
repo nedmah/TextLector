@@ -13,74 +13,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.nedmah.textlector.common.navigation.ImportRoute
-import com.nedmah.textlector.common.navigation.LibraryRoute
-import com.nedmah.textlector.common.navigation.SettingsRoute
+import com.nedmah.textlector.common.navigation.isTopLevel
+import com.nedmah.textlector.common.navigation.navigateToTopLevel
+import com.nedmah.textlector.common.navigation.topLevelDestinations
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import textlector.composeapp.generated.resources.Res
-import textlector.composeapp.generated.resources.ic_import
-import textlector.composeapp.generated.resources.ic_library
-import textlector.composeapp.generated.resources.ic_settings
-import textlector.composeapp.generated.resources.nav_import
-import textlector.composeapp.generated.resources.nav_library
-import textlector.composeapp.generated.resources.nav_settings
-
-data class BottomNavItem(
-    val route: Any,
-    val icon: @Composable () -> Unit
-)
 
 @Composable
 fun BottomNavBar(navController: NavController) {
 
     val backStack by navController.currentBackStackEntryAsState()
-    val currentRoute = backStack?.destination?.route
-
-    val items = listOf(
-        BottomNavItem(
-            LibraryRoute
-        ) {
-            Icon(painterResource(Res.drawable.ic_library), contentDescription = "Library")
-        },
-        BottomNavItem(
-            ImportRoute
-        ) {
-            Icon(painterResource(Res.drawable.ic_import), contentDescription = "Import")
-        },
-        BottomNavItem(
-            SettingsRoute
-        ) {
-            Icon(painterResource(Res.drawable.ic_settings), contentDescription = "Settings")
-        }
-    )
+    val currentDestination = backStack?.destination
 
     NavigationBar {
         CompositionLocalProvider(LocalRippleConfiguration provides null) {
-            items.forEach { item ->
+            topLevelDestinations.forEach { destination ->
                 NavigationBarItem(
-                    selected = currentRoute?.contains(
-                        item.route::class.qualifiedName ?: ""
-                    ) == true,
+                    selected = currentDestination.isTopLevel(destination.route),
                     onClick = {
-                        navController.navigate(item.route) {
-                            popUpTo(LibraryRoute) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navController.navigateToTopLevel(destination.route)
                     },
-                    icon = item.icon,
-                    label = {
-                        Text(
-                            stringResource(
-                                when (item.route) {
-                                    is LibraryRoute -> Res.string.nav_library
-                                    is ImportRoute -> Res.string.nav_import
-                                    else -> Res.string.nav_settings
-                                }
-                            )
-                        )
-                    },
+                    icon = { Icon(painterResource(destination.icon), contentDescription = null) },
+                    label = { Text(stringResource(destination.label)) },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
                         selectedIconColor = MaterialTheme.colorScheme.primary,
