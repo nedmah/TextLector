@@ -168,9 +168,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = rootProject.file("textlector.jks")
-            storePassword = localProps["KEYSTORE_PASSWORD"] as String
+            storePassword = localProps.getProperty("KEYSTORE_PASSWORD")
             keyAlias = "textlector"
-            keyPassword = localProps["KEY_PASSWORD"] as String
+            keyPassword = localProps.getProperty("KEY_PASSWORD")
         }
     }
     buildTypes {
