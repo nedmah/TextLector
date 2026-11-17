@@ -4,6 +4,7 @@ import com.nedmah.textlector.domain.model.TtsEngineType
 import com.nedmah.textlector.domain.model.UserPreferences
 import com.nedmah.textlector.domain.model.VoiceGender
 import com.nedmah.textlector.domain.repository.PreferencesRepository
+import com.nedmah.textlector.getPlatform
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.coroutines.getBooleanFlow
@@ -29,6 +30,9 @@ class PreferencesRepositoryImpl(
         const val KEY_ENGINE_TYPE = "engine_type"
         const val KEY_FINISHED_DOCUMENTS = "finished_documents_count"
     }
+
+    private val hasSystemTts = getPlatform().hasSystemTts
+    private val defaultEngine = if (hasSystemTts) TtsEngineType.SYSTEM else TtsEngineType.PIPER
 
     override suspend fun setVoiceProfile(type: VoiceGender) =
         withContext(Dispatchers.IO) {
@@ -77,7 +81,7 @@ class PreferencesRepositoryImpl(
             listOf(gender, speed.toString(), fontSize.toString(), darkMode.toString(), language)
         }
 
-        val engineTypeFlow = settings.getStringFlow(KEY_ENGINE_TYPE, TtsEngineType.SYSTEM.name)
+        val engineTypeFlow = settings.getStringFlow(KEY_ENGINE_TYPE, defaultEngine.name)
 
         return combine(basicFlow, engineTypeFlow) { basic, engineTypeName ->
             UserPreferences(
@@ -88,6 +92,7 @@ class PreferencesRepositoryImpl(
                 language = basic[4],
                 engineType = runCatching { TtsEngineType.valueOf(engineTypeName) }
                     .getOrDefault(TtsEngineType.SYSTEM)
+                    .takeIf { it != TtsEngineType.SYSTEM || hasSystemTts } ?: TtsEngineType.PIPER
             )
         }
     }

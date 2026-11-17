@@ -13,8 +13,8 @@ import com.nedmah.textlector.common.platform.tts.SwitchableTtsEngine
 import com.nedmah.textlector.common.platform.tts.TtsEngine
 import com.nedmah.textlector.data.db.DatabaseDriverFactory
 import com.nedmah.textlector.data.repository.AndroidOcrDataRepository
-import com.nedmah.textlector.data.repository.AndroidSupertonicRepositoryImpl
-import com.nedmah.textlector.data.repository.AndroidVoiceModelRepositoryImpl
+import com.nedmah.textlector.data.repository.FileSupertonicRepository
+import com.nedmah.textlector.data.repository.FileVoiceModelRepository
 import com.nedmah.textlector.domain.repository.OcrDataRepository
 import com.nedmah.textlector.domain.repository.SupertonicRepository
 import com.nedmah.textlector.domain.repository.VoiceModelRepository
@@ -37,8 +37,8 @@ actual val platformModule = module {
 
     // repository
     single<OcrDataRepository> { AndroidOcrDataRepository(get()) }
-    single<VoiceModelRepository> { AndroidVoiceModelRepositoryImpl(androidContext()) }
-    single<SupertonicRepository> { AndroidSupertonicRepositoryImpl(androidContext()) }
+    single<VoiceModelRepository> { FileVoiceModelRepository(androidContext().filesDir) }
+    single<SupertonicRepository> { FileSupertonicRepository(androidContext().filesDir) }
 
     // TTS engines
     single { AndroidTtsEngine(androidContext()) }

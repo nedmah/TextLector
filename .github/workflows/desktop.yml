@@ -1,0 +1,35 @@
+name: Desktop build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    tags: ['v*']
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            task: packageDmg
+            path: composeApp/build/compose/binaries/main/dmg/*.dmg
+          - os: windows-latest
+            task: packageMsi
+            path: composeApp/build/compose/binaries/main/msi/*.msi
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Package
+        shell: bash
+        run: ./gradlew :composeApp:${{ matrix.task }}
+      - uses: actions/upload-artifact@v5
+        with:
+          name: TextLector-${{ runner.os }}
+          path: ${{ matrix.path }}

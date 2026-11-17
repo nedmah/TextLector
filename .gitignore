@@ -39,10 +39,9 @@ google-services.json
 *.keystore
 *.jks
 
-# iOS Frameworks
-iosApp/Frameworks/sherpa-onnx.xcframework/
-iosApp/Frameworks/onnxruntime.xcframework/
-iosApp/Frameworks/build-ios/
+# Old manual iOS frameworks (now SPM)
+iosApp/Frameworks/
 
 # Android release artefacts
 composeApp/release/
+composeApp/lector.db

@@ -1,5 +1,6 @@
 package com.nedmah.textlector.common.platform.file
 
+import com.nedmah.textlector.common.platform.logging.CrashReporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.FileSystem
@@ -14,11 +15,26 @@ actual class FileReader {
     actual suspend fun readPdf(
         uri: String,
         onProgress: (current: Int, total: Int) -> Unit
-    ): Result<String> {
-        TODO("Not yet implemented")
+    ): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            PDDocument.load(File(uri)).use { document ->
+                val totalPages = document.numberOfPages
+                val stripper = PDFTextStripper()
+                buildString {
+                    for (page in 1..totalPages) {
+                        stripper.startPage = page
+                        stripper.endPage = page
+                        append(stripper.getText(document))
+                        onProgress(page, totalPages)
+                    }
+                }
+            }
+        }.onFailure {
+            CrashReporter.recordException(it, "readPdf failed: $uri")
+        }
     }
 
-    actual suspend fun readBytes(uri: String): Result<ByteArray> {
-        TODO("Not yet implemented")
+    actual suspend fun readBytes(uri: String): Result<ByteArray> = withContext(Dispatchers.IO) {
+        runCatching { File(uri).readBytes() }
     }
 }

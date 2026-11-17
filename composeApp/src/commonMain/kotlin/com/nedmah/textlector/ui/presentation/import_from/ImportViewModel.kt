@@ -12,6 +12,7 @@ import com.nedmah.textlector.domain.usecase.DownloadOcrDataUseCase
 import com.nedmah.textlector.domain.usecase.ImportDocumentUseCase
 import com.nedmah.textlector.domain.usecase.InputTextManuallyUseCase
 import com.nedmah.textlector.domain.usecase.SaveDocumentUseCase
+import com.nedmah.textlector.domain.util.FileTitle
 import com.nedmah.textlector.domain.util.UrlValidator
 import com.nedmah.textlector.ui.presentation.import_from.ImportEffect.ShowError
 import kotlinx.coroutines.Job
@@ -183,8 +184,9 @@ class ImportViewModel(
             }
         }
 
-        val title = fileName?.removeSuffix(".zip")?.substringBeforeLast('.')
-            ?: uri.substringAfterLast("/").substringBeforeLast(".")
+        val title = FileTitle.fromFileName(
+            fileName ?: uri.substringAfterLast("/")
+        )
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, importProgress = null) }

@@ -16,7 +16,18 @@ plugins {
 
 
 val localProps = Properties().apply {
-    rootProject.file("local.properties").inputStream().use { load(it) }
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+// sherpa-onnx libs for the OS that builds and runs the desktop app
+val sherpaNativeClassifier: String = run {
+    val os = System.getProperty("os.name").lowercase()
+    val arch = System.getProperty("os.arch").lowercase()
+    when {
+        os.contains("mac") && (arch == "aarch64" || arch == "arm64") -> "osx-aarch64"
+        os.contains("win") -> "win-x64"
+        else -> error("Desktop build is not supported on $os/$arch")
+    }
 }
 
 kotlin {
@@ -46,7 +57,19 @@ kotlin {
     jvm()
     jvmToolchain(21)
 
+    // explicit call is required: a manual dependsOn would otherwise disable the default hierarchy
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
+        val jvmAndAndroidMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.commons.compress)
+            }
+        }
+        androidMain.get().dependsOn(jvmAndAndroidMain)
+        jvmMain.get().dependsOn(jvmAndAndroidMain)
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -90,7 +113,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.sqldelight.androidDriver)
-            implementation(libs.commons.compress.android)
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.13.0"))
             implementation(libs.firebase.crashlytics)
             implementation(libs.firebase.analytics)
@@ -103,10 +125,13 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
+            val sherpaVersion = libs.versions.sherpaOnnx.get()
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.jvmDriver)
             implementation(libs.pdfbox.jvm)
+            implementation(files("libs/desktop/sherpa-onnx-jvm-$sherpaVersion.jar"))
+            implementation(files("libs/desktop/sherpa-onnx-native-lib-$sherpaNativeClassifier-$sherpaVersion.jar"))
         }
     }
 
@@ -127,8 +152,8 @@ android {
         applicationId = "com.nedmah.textlector"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 140
-        versionName = "1.4.0"
+        versionCode = 150
+        versionName = "1.5.0"
     }
     flavorDimensions += "store"
     productFlavors {
@@ -143,9 +168,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = rootProject.file("textlector.jks")
-            storePassword = localProps["KEYSTORE_PASSWORD"] as String
+            storePassword = localProps.getProperty("KEYSTORE_PASSWORD")
             keyAlias = "textlector"
-            keyPassword = localProps["KEY_PASSWORD"] as String
+            keyPassword = localProps.getProperty("KEY_PASSWORD")
         }
     }
     buildTypes {
@@ -174,9 +199,25 @@ compose.desktop {
         mainClass = "com.nedmah.textlector.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.nedmah.textlector"
-            packageVersion = "1.0.0"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi)
+            packageName = "TextLector"
+            packageVersion = "1.5.0"
+            description = "Offline text-to-speech reader"
+            vendor = "nedmah"
+            modules("java.instrument", "java.management", "java.naming", "java.prefs", "java.sql", "jdk.unsupported")
+
+            macOS {
+                bundleID = "com.nedmah.textlector"
+                iconFile.set(project.file("icons/icon.icns"))
+            }
+            windows {
+                iconFile.set(project.file("icons/icon.ico"))
+                upgradeUuid = "272b20d4-5f54-4531-a3ba-f42bb3421712"
+                menuGroup = "TextLector"
+                shortcut = true
+                perUserInstall = true
+                dirChooser = true
+            }
         }
     }
 }

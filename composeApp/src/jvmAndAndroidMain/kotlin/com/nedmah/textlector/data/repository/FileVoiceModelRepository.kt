@@ -1,6 +1,5 @@
 package com.nedmah.textlector.data.repository
 
-import android.content.Context
 import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.data.download.HttpFileDownloader
 import com.nedmah.textlector.domain.model.PiperModelPath
@@ -23,11 +22,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-class AndroidVoiceModelRepositoryImpl(
-    private val context: Context
+class FileVoiceModelRepository(
+    filesDir: File
 ) : VoiceModelRepository {
 
-    private val modelsDir = File(context.filesDir, "tts_models").also { it.mkdirs() }
+    private val modelsDir = File(filesDir, "tts_models").also { it.mkdirs() }
     private val espeakDir = File(modelsDir, "espeak-ng-data")  // keep this file separately bc it duplicates in models
 
     private val stateFlows = VoiceId.entries.associateWith {

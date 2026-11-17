@@ -1,6 +1,5 @@
 package com.nedmah.textlector.data.repository
 
-import android.content.Context
 import com.nedmah.textlector.common.platform.logging.CrashReporter
 import com.nedmah.textlector.data.download.HttpFileDownloader
 import com.nedmah.textlector.domain.model.SupertonicModel
@@ -20,12 +19,12 @@ import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
-class AndroidSupertonicRepositoryImpl(
-    context: Context
+class FileSupertonicRepository(
+    filesDir: File
 ) : SupertonicRepository {
 
-    private val modelDir = File(context.filesDir, SupertonicModel.DIR_NAME)
-    private val legacyDir = File(context.filesDir, SupertonicModel.LEGACY_DIR_NAME)
+    private val modelDir = File(filesDir, SupertonicModel.DIR_NAME)
+    private val legacyDir = File(filesDir, SupertonicModel.LEGACY_DIR_NAME)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val _downloadState = MutableStateFlow(

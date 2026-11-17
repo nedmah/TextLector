@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.model.TtsEngineType
 import com.nedmah.textlector.domain.model.VoiceGender
+import com.nedmah.textlector.getPlatform
 import com.nedmah.textlector.ui.presentation.settings.components.EngineRow
 import com.nedmah.textlector.ui.presentation.settings.components.FontSizeOption
 import com.nedmah.textlector.ui.presentation.settings.components.SettingsSection
@@ -116,19 +117,21 @@ fun SettingsScreenRoot(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // System TTS
-                EngineRow(
-                    title = stringResource(Res.string.settings_engine_system_title),
-                    subtitle = stringResource(Res.string.settings_engine_system_subtitle),
-                    isSelected = state.engineType == TtsEngineType.SYSTEM,
-                    isAvailable = true,
-                    onClick = {
-                        viewModel.onIntent(SettingsIntent.SetAudioEngine(TtsEngineType.SYSTEM))
-                        showEngineSheet = false
-                    }
-                )
+                if (getPlatform().hasSystemTts) { // on jvm there's none
+                    // System TTS
+                    EngineRow(
+                        title = stringResource(Res.string.settings_engine_system_title),
+                        subtitle = stringResource(Res.string.settings_engine_system_subtitle),
+                        isSelected = state.engineType == TtsEngineType.SYSTEM,
+                        isAvailable = true,
+                        onClick = {
+                            viewModel.onIntent(SettingsIntent.SetAudioEngine(TtsEngineType.SYSTEM))
+                            showEngineSheet = false
+                        }
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
                 // Piper
                 EngineRow(

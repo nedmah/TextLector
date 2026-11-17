@@ -7,6 +7,9 @@
     <string name="action_download">Скачать</string>
     <string name="action_rename">Переименовать</string>
     <string name="action_see_all">все</string>
+    <string name="action_more">Ещё</string>
+    <string name="action_add_favorite">В избранное</string>
+    <string name="action_remove_favorite">Убрать из избранного</string>
     <string name="app_name">TextLector</string>
     <string name="made_by">ПРОЕКТ СОЗДАН @NEDMAH</string>
 

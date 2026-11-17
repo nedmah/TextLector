@@ -7,6 +7,7 @@ import com.k2fsa.sherpa.onnx.OfflineTtsConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsModelConfig
 import com.k2fsa.sherpa.onnx.OfflineTtsSupertonicModelConfig
 import com.nedmah.textlector.common.platform.logging.CrashReporter
+import com.nedmah.textlector.common.platfrom.tts.WavCodec
 import com.nedmah.textlector.domain.model.Paragraph
 import com.nedmah.textlector.domain.model.SupertonicModel
 import com.nedmah.textlector.domain.model.SupertonicModelPaths
@@ -60,7 +61,7 @@ class AndroidSupertonicTtsEngine(
                 engine.generateWithConfig(text, config)
             }
             if (audio.samples.isEmpty()) ByteArray(0)
-            else AndroidTrackPlayer.samplesToWav(audio.samples, audio.sampleRate)
+            else WavCodec.fromSamples(audio.samples, audio.sampleRate)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

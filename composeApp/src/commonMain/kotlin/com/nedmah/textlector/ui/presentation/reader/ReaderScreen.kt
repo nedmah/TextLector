@@ -3,6 +3,7 @@ package com.nedmah.textlector.ui.presentation.reader
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nedmah.textlector.domain.util.formatMinutes
 import com.nedmah.textlector.ui.presentation.player.PlayerIntent
@@ -106,19 +108,26 @@ fun ReaderScreen(
                 CircularProgressIndicator()
             }
         } else {
-            ReaderContent(
-                paragraphs = readerState.paragraphs,
-                currentParagraphIndex = playerState.currentParagraphIndex,
-                isPlaying = playerState.isPlaying,
-                fontSize = readerState.fontSize,
-                onParagraphClick = { index ->
-                    onPlayerIntent(PlayerIntent.SeekToParagraph(index))
-                    if (!playerState.isPlaying) {
-                        onPlayerIntent(PlayerIntent.Play)
-                    }
-                },
-                modifier = Modifier.padding(paddingValues)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                ReaderContent(
+                    paragraphs = readerState.paragraphs,
+                    currentParagraphIndex = playerState.currentParagraphIndex,
+                    isPlaying = playerState.isPlaying,
+                    fontSize = readerState.fontSize,
+                    onParagraphClick = { index ->
+                        onPlayerIntent(PlayerIntent.SeekToParagraph(index))
+                        if (!playerState.isPlaying) {
+                            onPlayerIntent(PlayerIntent.Play)
+                        }
+                    },
+                    modifier = Modifier.widthIn(max = 720.dp)
+                )
+            }
         }
     }
 
