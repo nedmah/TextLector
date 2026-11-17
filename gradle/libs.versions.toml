@@ -38,7 +38,7 @@ mlkit-text = "16.0.1"
 rustoreReview = "10.5.2"
 
 [libraries]
-commons-compress-android = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }

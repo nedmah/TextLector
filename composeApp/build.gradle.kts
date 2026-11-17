@@ -46,7 +46,19 @@ kotlin {
     jvm()
     jvmToolchain(21)
 
+    // explicit call is required: a manual dependsOn would otherwise disable the default hierarchy
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
+        val jvmAndAndroidMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.commons.compress)
+            }
+        }
+        androidMain.get().dependsOn(jvmAndAndroidMain)
+        jvmMain.get().dependsOn(jvmAndAndroidMain)
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -90,7 +102,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.sqldelight.androidDriver)
-            implementation(libs.commons.compress.android)
             implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.13.0"))
             implementation(libs.firebase.crashlytics)
             implementation(libs.firebase.analytics)
