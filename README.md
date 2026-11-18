@@ -30,7 +30,13 @@ The desktop builds are not signed, so the OS will warn you on first launch:
 
 ## Demo
 
+### Mobile
+
 https://github.com/user-attachments/assets/0756bb22-88df-4ab7-adac-295487bf5d66
+
+### Desktop
+
+https://github.com/user-attachments/assets/0640d881-ff36-47c6-a53e-8826d8dea5d6
 
 ---
 
